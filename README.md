@@ -69,10 +69,29 @@ cp AI_Server/.env.example AI_Server/.env
 - `GEMINI_API_KEY` — Google AI Studio에서 발급 (https://aistudio.google.com)
 - `DB_PASSWORD` — MySQL 비밀번호
 
-패키지를 설치하고 서버를 실행한다.
+패키지를 설치한다 (최초 1회).
 
 ```bash
 pip install -r requirements.txt
+```
+
+가상 환경을 활성화한다.
+
+**Windows:**
+```bash
+.venv\Scripts\activate
+```
+
+**Mac/Linux:**
+```bash
+source .venv/bin/activate
+```
+
+> 터미널 입력창 앞에 `(.venv)`가 표시되면 정상이다.
+
+서버를 실행한다.
+
+```bash
 uvicorn main:app --reload --port 8000
 ```
 
@@ -93,8 +112,10 @@ npm run dev
 ## AI 모델 재학습 (선택)
 
 `bank_model.pkl`이 이미 포함되어 있으므로 별도 학습 없이 바로 실행 가능하다.
-모델을 직접 재학습하려면 AI Server에서 아래 스크립트를 실행한다.
+모델을 직접 재학습하려면 가상 환경을 활성화한 뒤 AI Server에서 아래 스크립트를 실행한다.
 
 ```bash
 python RF.py
 ```
+
+> 학습 완료 시 `bank_model.pkl`이 갱신된다. 정확도 85% 미만이면 저장되지 않는다.
