@@ -82,21 +82,12 @@ public class TaskService {
         }
         String ticketNumber = String.format("%s-%03d", prefix, nextNum);
 
-        // 3. 대기 인원 및 예상 대기 시간 계산
-        int waitingCount = taskMapper.countWaitingTasks(taskType);
-        if ( waitingCount == 0) {
-            waitingCount = 1;
-        }
-        int availableMemberCount = taskMapper.countAvailableMembersByLevel(minLevel);
-        if (availableMemberCount == 0) availableMemberCount = 1; // 0으로 나누기 방지
-
-        int expectedWaitingTime = (waitingCount * processingTime) / availableMemberCount;
-
-        // 4. 직원 배정
+        // 3. 직원 배정 (가중 대기시간 기준 가장 한가한 직원)
         Integer memberId = taskMapper.selectAvailableMemberId(minLevel);
-        
-        // 5. 순번 (ranking)
-        int ranking = waitingCount + 1;
+
+        // 4. 예상 대기 시간 + 순번 (배정된 직원 기준)
+        int expectedWaitingTime = memberId != null ? taskMapper.selectMemberTotalWaitTime(memberId) : 0;
+        int ranking = memberId != null ? taskMapper.countWaitingTasksByMemberId(memberId) + 1 : 1;
 
         // 6. 엔티티 생성 및 저장
         TaskEntity task = TaskEntity.builder()

@@ -42,10 +42,37 @@
     </select>
 
     <select id="selectAvailableMemberId" resultType="integer">
-        SELECT id FROM `bank`.`member`
-        WHERE level >= #{minLevel}
-        AND status = 1 -- 근무 중인 직원
-        ORDER BY RAND() LIMIT 1 -- 랜덤 배정 (또는 대기 인원 적은 순 등 로직 변경 가능)
+        SELECT m.id FROM `bank`.`member` m
+        LEFT JOIN (
+            SELECT member_id,
+                   SUM(CASE task_type
+                       WHEN '빠른 업무'   THEN 5
+                       WHEN '상담 업무'   THEN 10
+                       WHEN '기업 • 특수' THEN 25
+                       ELSE 5
+                   END) AS total_wait_min
+            FROM `bank`.`task` WHERE status = 'WAITING'
+            GROUP BY member_id
+        ) w ON m.id = w.member_id
+        WHERE m.level >= #{minLevel} AND m.status = 1
+        ORDER BY COALESCE(w.total_wait_min, 0) ASC, m.level ASC
+        LIMIT 1
+    </select>
+
+    <select id="selectMemberTotalWaitTime" resultType="int">
+        SELECT COALESCE(SUM(CASE task_type
+            WHEN '빠른 업무'   THEN 5
+            WHEN '상담 업무'   THEN 10
+            WHEN '기업 • 특수' THEN 25
+            ELSE 5
+        END), 0)
+        FROM `bank`.`task`
+        WHERE member_id = #{memberId} AND status = 'WAITING'
+    </select>
+
+    <select id="countWaitingTasksByMemberId" resultType="int">
+        SELECT COUNT(*) FROM `bank`.`task`
+        WHERE member_id = #{memberId} AND status = 'WAITING'
     </select>
 
     <select id="selectTasksByUserId" resultType="dev.gmpark.bankbackend.vos.TaskVo">

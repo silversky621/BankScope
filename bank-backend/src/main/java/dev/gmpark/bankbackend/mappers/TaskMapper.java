@@ -32,6 +32,8 @@ public interface TaskMapper {
     Integer selectHighestLevelMemberId(@Param("excludeId") Long excludeId);
     int updateMemberIdForTasks(@Param("taskIds") List<Long> taskIds, @Param("memberId") Integer memberId);
     int countAvailableMembersByLevel(@Param("minLevel") int minLevel);
+    int selectMemberTotalWaitTime(@Param("memberId") Integer memberId);
+    int countWaitingTasksByMemberId(@Param("memberId") Integer memberId);
     int tossTask(@Param("taskId") Long taskId, @Param("targetMemberId") Integer targetMemberId, @Param("status") String status);
     TaskVo getTask(@Param("taskId") Long taskId);
     int countInProgressTasks();
