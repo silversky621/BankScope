@@ -123,7 +123,9 @@ create table `bank`.`financial_product`
     is_active           tinyint(1) default 1                                     null,
     target_type         enum ('INDIVIDUAL', 'CORPORATE', 'ALL')                 null,
     created_at          datetime   default CURRENT_TIMESTAMP                    null,
-    updated_at          datetime   default CURRENT_TIMESTAMP                    null on update CURRENT_TIMESTAMP
+    updated_at          datetime   default CURRENT_TIMESTAMP                    null on update CURRENT_TIMESTAMP,
+    min_age             int                                                      null,
+    max_age             int                                                      null
     );
 
 
