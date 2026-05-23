@@ -30,9 +30,8 @@ AI 기반 통합 스마트 뱅킹 플랫폼. 고객 맞춤 금융 상품 추천,
 MySQL에서 아래 SQL 파일을 **순서대로** 실행한다.
 
 ```
-1. AI_Server/schema.sql                    ← 테이블 생성
-2. AI_Server/insert_financial_products.sql ← 금융 상품 데이터 입력
-3. AI_Server/insert_product_subscription.sql ← 상품 구독 데이터 입력
+1. AI_Server/schema.sql       ← 테이블 생성
+2. AI_Server/bank_dump.sql    ← 샘플 데이터 복원
 ```
 
 ### 2. Backend (`bank-backend`)
