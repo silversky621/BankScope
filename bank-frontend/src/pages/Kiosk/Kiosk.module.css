@@ -762,6 +762,10 @@ input[name="ssnBack"] {
 
 /* 📱 태블릿 (가로 768px 이하) */
 @media screen and (max-width: 768px) {
+    .taskSelectArea {
+        overflow-y: auto;
+    }
+
     .userInfoWrapper {
         right: 120px;
         bottom: 0;
@@ -777,6 +781,7 @@ input[name="ssnBack"] {
     .categoryContainer {
         gap: 10px;
         padding: 0 10px;
+        margin-bottom: 3rem;
     }
 
     .categoryCard {
@@ -804,6 +809,10 @@ input[name="ssnBack"] {
 
 /* 📱 모바일 (가로 480px 이하) */
 @media screen and (max-width: 480px) {
+    .taskSelectArea {
+        overflow-y: auto;
+    }
+
     .userInfoWrapper {
         right: 120px;
         bottom: 0;
@@ -827,7 +836,7 @@ input[name="ssnBack"] {
     .categoryContainer {
         gap: 5px;
         padding: 0 5px;
-
+        margin-bottom: 1.5rem;
     }
 
     .categoryCard {
