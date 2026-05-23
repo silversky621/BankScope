@@ -510,10 +510,12 @@ input[name="ssnBack"] {
 
     /* 이전으로 버튼 크기 및 여백 조정 */
     .prevButton {
+        position: fixed;
         bottom: 20px;
         left: 15px;
         padding: 8px 12px;
         font-size: 0.9rem;
+        z-index: 9999;
     }
 
     /* 접수 방식 선택 카드만 반응형 적용 (가로 폭 줄임, 패딩 줄임, 폰트 조절) */
@@ -583,11 +585,13 @@ input[name="ssnBack"] {
         border-radius: 6px;
     }
 
-    /* 모바일에서는 이전 버튼을 절대 위치(absolute) 대신 키패드 아래쪽 중앙에 자연스럽게 배치 */
+    /* 모바일에서는 이전 버튼을 뷰포트에 고정하여 컨텐츠가 길어져도 항상 누를 수 있게 */
     .prevButton {
-        position: static;
-        margin-top: 20px;
-        align-self: center;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+        margin-top: 0;
     }
 
     /* 모바일 접수 방식 선택 카드 (flex-direction: row 유지하되 레이아웃 조정) */
