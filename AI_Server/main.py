@@ -531,13 +531,16 @@ def get_user_recommendation(user_id: int):
         }
 
         recommended_ids = recommender_obj.get_recommendations(user_profile)
+        user_age = user_profile['age']
 
         products_list = []
         with get_db_cursor() as (conn, cursor):
             for product_id in recommended_ids:
                 cursor.execute(
-                    "SELECT * FROM financial_product WHERE product_id = %s AND is_active = 1",
-                    (int(product_id),)
+                    "SELECT * FROM financial_product WHERE product_id = %s AND is_active = 1"
+                    " AND (min_age IS NULL OR min_age <= %s)"
+                    " AND (max_age IS NULL OR max_age >= %s)",
+                    (int(product_id), user_age, user_age)
                 )
                 product_data = cursor.fetchone()
                 if product_data:
