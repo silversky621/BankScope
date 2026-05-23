@@ -108,6 +108,21 @@ npm run dev
 
 ---
 
+## 테스트 계정
+
+샘플 데이터에 포함된 테스트 계정 목록은 `AI_Server/user.txt`를 참고한다.
+
+| 구분 | 계정 예시 | 비밀번호 |
+|---|---|---|
+| 고객 (개인) | `test01@test.com` ~ `test15@test.com` | `Test1234!` |
+| 고객 (법인) | `corp01@test.com` ~ `corp06@test.com` | `Test1234!` |
+| 행원 | `banker@naver.com` 외 4명 (`AI_Server/bank_dump.sql` 참고) | `1234` |
+| 관리자 | `admin@admin.com` | `1234` |
+
+> 전체 고객 계정의 상세 정보(이름, 주민번호, 전화번호 등)는 `AI_Server/user.txt`를 참고한다.
+
+---
+
 ## AI 모델 재학습 (선택)
 
 `bank_model.pkl`이 이미 포함되어 있으므로 별도 학습 없이 바로 실행 가능하다.
