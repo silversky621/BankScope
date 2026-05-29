@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException;
 
 public class UserValidator {
     public static final String EMAIL_REGEX = "^(?=.{8,50}$)([\\da-zA-Z_.]{4,25})@([\\da-z\\-]+\\.)?([\\da-z\\-]{2,})\\.([a-z]{2,15}\\.)?([a-z]{2,3})$";
-    public static final String PASSWORD_REGEX = "^[\\da-zA-Z`~!@#$%^&*()\\-_=+\\[{\\]}\\\\|;:'\",<.>\\/?]{6,50}$";
+    public static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[`~!@#$%^&*()\\-_=+\\[{\\]}\\\\|;:'\",<.>\\/?]).{8,50}$";
     public static final String RESIDENT_NUMBER_REGEX = "/^\\d{6}-[1-4]\\d{6}$/";
 
 
@@ -25,7 +25,7 @@ public class UserValidator {
     }
     public static boolean validatePassword(String password) {
         return password !=null &&
-                ValidatorUtils.isLengthInBetween(password, 6, 50) && password.matches(PASSWORD_REGEX);
+                ValidatorUtils.isLengthInBetween(password, 8, 50) && password.matches(PASSWORD_REGEX);
     }
 
     public static boolean validateResidentNumber(@NonNull UserEntity user) {
