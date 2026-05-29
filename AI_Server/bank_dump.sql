@@ -360,7 +360,7 @@ CREATE TABLE `member` (
 
 LOCK TABLES `member` WRITE;
 /*!40000 ALTER TABLE `member` DISABLE KEYS */;
-INSERT INTO `member` VALUES (1,'banker@naver.com','$2a$10$xiKj297Oz7G4YBL1mJBT7OQlDucMCKombs4R22ybiIJdKucTVzPzK','행원1',1,'사원',NULL,0,1,'2026-03-27',NULL,'2026-03-27 03:08:27'),(2,'test123@naver.com','$2a$10$AgXJIY4IbqHCjaiGc0L2D.vVpCCTfJTLzRhQ/dZrXa9tF9EcaVz.i','행원2',2,'사원','영업팀',1,2,'2026-05-02','2026-05-02 14:47:13','2026-05-02 05:47:13'),(3,'test222@naver.com','$2a$10$NQHtPw0.UZHUjvzp9SWln.LakE4avfXAat8Ia38k5il1dm2NRKC7G','행원3',3,'사원',NULL,0,3,'2026-05-08',NULL,'2026-05-08 01:13:24'),(4,'test111@naver.com','$2b$10$ezXD34ooeBjTpi/uAV8wYurHpOjkBcIenS0cWdy8ryYqo2kMTd1Mi','행원4',4,'사원',NULL,0,4,'2026-05-08',NULL,'2026-05-08 01:14:43'),(5,'test333@naver.com','$2a$10$P/77uT8Jum0h/BKs3fwUYO.vRDl/2XfMY2LhZ9ZpqP2yUwrDWtkyO','행원5',5,'사원',NULL,0,5,'2026-05-08',NULL,'2026-05-08 01:14:43');
+INSERT INTO `member` VALUES (1,'banker@naver.com','$2b$10$tQLMF7aBzaXOpqERG3PgoOkhd9gc4kD8tbRp.1RIkYkNGeLpr9hLu','행원1',1,'사원',NULL,0,1,'2026-03-27',NULL,'2026-03-27 03:08:27'),(2,'test123@naver.com','$2b$10$tQLMF7aBzaXOpqERG3PgoOkhd9gc4kD8tbRp.1RIkYkNGeLpr9hLu','행원2',2,'사원','영업팀',1,2,'2026-05-02','2026-05-02 14:47:13','2026-05-02 05:47:13'),(3,'test222@naver.com','$2b$10$tQLMF7aBzaXOpqERG3PgoOkhd9gc4kD8tbRp.1RIkYkNGeLpr9hLu','행원3',3,'사원',NULL,0,3,'2026-05-08',NULL,'2026-05-08 01:13:24'),(4,'test111@naver.com','$2b$10$tQLMF7aBzaXOpqERG3PgoOkhd9gc4kD8tbRp.1RIkYkNGeLpr9hLu','행원4',4,'사원',NULL,0,4,'2026-05-08',NULL,'2026-05-08 01:14:43'),(5,'test333@naver.com','$2b$10$tQLMF7aBzaXOpqERG3PgoOkhd9gc4kD8tbRp.1RIkYkNGeLpr9hLu','행원5',5,'사원',NULL,0,5,'2026-05-08',NULL,'2026-05-08 01:14:43');
 /*!40000 ALTER TABLE `member` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -668,4 +668,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-30  3:17:55
+-- Dump completed on 2026-05-30  5:30:21
