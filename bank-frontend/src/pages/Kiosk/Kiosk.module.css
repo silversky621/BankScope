@@ -163,6 +163,11 @@
     background-color: #00816c;
 }
 
+.startButton:disabled, .startButton2:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .startButton2 {
     background-color: #ffffff;
     color: #009d84;
