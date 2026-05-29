@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.CardMapper">
+<mapper namespace="com.bankscope.backend.mappers.CardMapper">
 
     <insert id="insertCard" useGeneratedKeys="true" keyColumn="card_id" keyProperty="cardId">
         INSERT INTO `bank`.`card` (
@@ -14,7 +14,7 @@
         )
     </insert>
 
-    <select id="selectCardsByUserId" resultType="dev.gmpark.bankbackend.entities.CardEntity">
+    <select id="selectCardsByUserId" resultType="com.bankscope.backend.entities.CardEntity">
         SELECT card_id AS cardId,
         user_id AS userId,
         account_id AS accountId,
@@ -34,7 +34,7 @@
         ORDER BY issued_at DESC
     </select>
 
-    <select id="selectCardByIdAndUserId" resultType="dev.gmpark.bankbackend.entities.CardEntity">
+    <select id="selectCardByIdAndUserId" resultType="com.bankscope.backend.entities.CardEntity">
         SELECT card_id AS cardId,
         user_id AS userId,
         account_id AS accountId,

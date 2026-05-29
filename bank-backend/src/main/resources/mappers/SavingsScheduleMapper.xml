@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="dev.gmpark.bankbackend.mappers.SavingsScheduleMapper">
+<mapper namespace="com.bankscope.backend.mappers.SavingsScheduleMapper">
 
     <insert id="insertSavingsSchedules" parameterType="java.util.List">
         INSERT INTO `bank`.`savings_schedule` (
@@ -13,7 +13,7 @@
         </foreach>
     </insert>
 
-    <select id="findEarliestPendingSchedule" resultType="dev.gmpark.bankbackend.entities.SavingsScheduleEntity">
+    <select id="findEarliestPendingSchedule" resultType="com.bankscope.backend.entities.SavingsScheduleEntity">
         SELECT
             schedule_id AS scheduleId,
             account_id AS accountId,
@@ -35,7 +35,7 @@
         WHERE schedule_id = #{scheduleId}
     </update>
 
-    <select id="findDueSchedules" resultType="dev.gmpark.bankbackend.dtos.PendingSavingsDto">
+    <select id="findDueSchedules" resultType="com.bankscope.backend.dtos.PendingSavingsDto">
         SELECT
             ss.schedule_id AS scheduleId,
             ss.account_id AS accountId,

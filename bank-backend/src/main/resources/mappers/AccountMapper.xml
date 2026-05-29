@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.AccountMapper">
+<mapper namespace="com.bankscope.backend.mappers.AccountMapper">
 
     <insert id="insertAccount"
             useGeneratedKeys="true"
@@ -46,7 +46,7 @@
     </insert>
 
     <!-- Account 정보와 Financial_Product 정보를 JOIN 하여 AccountVo 매핑 -->
-    <resultMap id="AccountVoMap" type="dev.gmpark.bankbackend.vos.AccountVo" autoMapping="true">
+    <resultMap id="AccountVoMap" type="com.bankscope.backend.vos.AccountVo" autoMapping="true">
         <id property="accountId" column="account_id" />
         <result property="userId" column="user_id" />
         <result property="productId" column="product_id" />
@@ -158,7 +158,7 @@
         WHERE account_id = #{accountId}
     </update>
 
-    <select id="findMaturedDepositAccounts" resultType="dev.gmpark.bankbackend.entities.AccountEntity">
+    <select id="findMaturedDepositAccounts" resultType="com.bankscope.backend.entities.AccountEntity">
         SELECT account_id AS accountId,
                user_id AS userId,
                product_id AS productId,
@@ -174,7 +174,7 @@
           AND DATE(maturity_date) &lt;= #{today}
     </select>
 
-    <select id="findDepositAccountByAccountId" resultType="dev.gmpark.bankbackend.entities.DepositAccountEntity">
+    <select id="findDepositAccountByAccountId" resultType="com.bankscope.backend.entities.DepositAccountEntity">
         SELECT account_id AS accountId,
                linked_account_id AS linkedAccountId,
                maturity_treatment AS maturityTreatment

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.UserPinMapper">
+<mapper namespace="com.bankscope.backend.mappers.UserPinMapper">
 
     <insert id="insertUserPin">
         INSERT INTO `bank`.`user_pin` (user_id, pin_hash, fail_count, locked_until, updated_at)
@@ -23,7 +23,7 @@
         DELETE FROM `bank`.`user_pin`
         WHERE user_id = #{userId}
     </delete>
-    <select id="getUserPin" resultType="dev.gmpark.bankbackend.entities.UserPinEntity">
+    <select id="getUserPin" resultType="com.bankscope.backend.entities.UserPinEntity">
         SELECT `user_id` AS `userId`,
                `pin_hash` AS `pinHash`,
                `fail_count` AS `failCount`,

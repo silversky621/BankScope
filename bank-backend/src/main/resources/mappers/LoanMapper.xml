@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.LoanMapper">
+<mapper namespace="com.bankscope.backend.mappers.LoanMapper">
 
     <!-- 대출 생성 -->
     <insert id="insertLoan" parameterType="LoanEntity"
@@ -42,7 +42,7 @@
     </select>
 
     <!-- 유저별 대출 목록 조회 -->
-    <select id="selectLoansByUserId" resultType="dev.gmpark.bankbackend.vos.LoanVo">
+    <select id="selectLoansByUserId" resultType="com.bankscope.backend.vos.LoanVo">
         SELECT
             `t1`.loan_id            AS loanId,
             `t1`.user_id            AS userId,
@@ -175,7 +175,7 @@
         FROM `bank`.`loan`
         WHERE user_id = #{userId}
     </select>
-    <select id="selectLoanVoById" resultType="dev.gmpark.bankbackend.vos.LoanVo">
+    <select id="selectLoanVoById" resultType="com.bankscope.backend.vos.LoanVo">
         SELECT
             `t1`.loan_id            AS loanId,
             `t1`.user_id            AS userId,

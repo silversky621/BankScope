@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.LoanScheduleMapper">
+<mapper namespace="com.bankscope.backend.mappers.LoanScheduleMapper">
     <select id="findPendingSchedulesByLoanId" resultType="LoanScheduleEntity">
         SELECT
         schedule_id AS scheduleId,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="dev.gmpark.bankbackend.mappers.SavingsAccountMapper">
+<mapper namespace="com.bankscope.backend.mappers.SavingsAccountMapper">
 
     <insert id="insertSavingsAccount">
         INSERT INTO `bank`.`savings_account`
@@ -10,7 +10,7 @@
             (#{accountId}, #{linkedAccountId}, #{installmentAmount}, #{termMonths}, #{paymentDay}, #{maturityDate})
     </insert>
 
-    <select id="selectSavingsAccountById" resultType="dev.gmpark.bankbackend.entities.SavingsAccountEntity">
+    <select id="selectSavingsAccountById" resultType="com.bankscope.backend.entities.SavingsAccountEntity">
         SELECT
             account_id AS accountId,
             linked_account_id AS linkedAccountId,
@@ -22,7 +22,7 @@
         WHERE account_id = #{accountId}
     </select>
 
-    <select id="findSchedulesToProcess" resultType="dev.gmpark.bankbackend.entities.SavingsScheduleEntity">
+    <select id="findSchedulesToProcess" resultType="com.bankscope.backend.entities.SavingsScheduleEntity">
         SELECT
             schedule_id AS scheduleId,
             account_id AS accountId,
