@@ -985,7 +985,6 @@ const BankerWorkSpace = () => {
                                                                 </button>
                                                             ) : (
                                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
-                                                                    <div>테스트용 취소/ 업무종료 버튼</div>
                                                                     <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
                                                                         <button
                                                                             className={styles.btnAccept}

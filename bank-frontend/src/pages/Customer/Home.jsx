@@ -76,17 +76,7 @@ const Home = () => {
             } catch (error) {
                 console.log(`${activeTab} API 연결 실패. 개발용 임시 데이터를 표시합니다.`, error);
                 
-                const mockData = activeTab === 'notice' 
-                    ? [
-                        { id: 1, title: '[공지] 일부 참가기관 디지털금융영업부 일시중단 안내', date: '2026.02.27' },
-                        { id: 2, title: '[공지] 신용카드 기업회원 약관 개정안내', date: '2026.02.25' },
-                        { id: 3, title: '[공지] 휴면예금 출연 안내', date: '2026.02.19' },
-                    ]
-                    : [
-                        { id: 101, title: '[이벤트] 첫 계좌 개설 시 1만원 캐시백!', date: '2026.03.01' },
-                        { id: 102, title: '[이벤트] 친구 초대하고 스벅 커피 받자', date: '2026.02.28' },
-                    ];
-                setBoardList(mockData);
+                setBoardList([]);
             } finally {
                 setIsLoadingBoard(false);
             }

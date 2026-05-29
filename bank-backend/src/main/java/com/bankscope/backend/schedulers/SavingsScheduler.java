@@ -18,11 +18,6 @@ public class SavingsScheduler {
     private final SavingsScheduleMapper savingsScheduleMapper;
     private final TransactionHistoryService transactionHistoryService;
 
-    /**
-     * 💡 실무에서는 매일 오전 10시에 돌도록 "0 0 10 * * ?" 를 씁니다.
-     * 지금은 테스트를 위해 앱을 켜면 10초마다 계속 돌도록 세팅했습니다!
-     * 테스트가 끝나면 "0 0 10 * * ?" 로 바꿔주세요.
-     */
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void processMonthlyAutomatedTransfers() {

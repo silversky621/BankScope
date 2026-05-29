@@ -149,6 +149,26 @@ public class TaskService {
         return taskMapper.countAllWaitingPerson();
     }
 
+    public List<Map<String, Object>> getHourlyTaskCounts() {
+        List<Map<String, Object>> rows = taskMapper.selectHourlyTaskCounts();
+        // 9~17시 모든 시간대를 0으로 초기화 후 채움
+        Map<Integer, Long> countMap = new java.util.LinkedHashMap<>();
+        for (int h = 9; h <= 17; h++) countMap.put(h, 0L);
+        for (Map<String, Object> row : rows) {
+            int hour = ((Number) row.get("hour")).intValue();
+            long cnt = ((Number) row.get("cnt")).longValue();
+            countMap.put(hour, cnt);
+        }
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+        countMap.forEach((h, cnt) -> {
+            Map<String, Object> entry = new java.util.HashMap<>();
+            entry.put("h", String.format("%02d", h));
+            entry.put("total", cnt);
+            result.add(entry);
+        });
+        return result;
+    }
+
     public Map<String, Integer> getWaitingCountByTaskType() {
         List<Map<String, Object>> rows = taskMapper.countWaitingPersonByTaskType();
         Map<String, Integer> result = new java.util.HashMap<>();

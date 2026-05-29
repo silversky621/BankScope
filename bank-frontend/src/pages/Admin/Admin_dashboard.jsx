@@ -2,11 +2,6 @@ import React, { useState, useEffect } from "react";
 import styles from "./Admin_dashboard.module.css";
 import { useModal } from '../../context/ModalContext';
 
-const MOCK_HOURLY_DATA = [
-  { h: "09", total: 12 }, { h: "10", total: 25 }, { h: "11", total: 18 },
-  { h: "12", total: 30 }, { h: "13", total: 22 }, { h: "14", total: 15 },
-  { h: "15", total: 10 }, { h: "16", total: 5 },
-];
 
 const LEVEL_LABELS = {
   1: "Lv.1 단순 수신",
@@ -42,7 +37,7 @@ export default function Admin_dashboard() {
   const [taskRatios, setTaskRatios] = useState(
     [1,2,3,4,5].map(lv => ({ lv, label: LEVEL_LABELS[lv], pct: 0 }))
   );
-  const [hourlyData] = useState(MOCK_HOURLY_DATA);
+  const [hourlyData, setHourlyData] = useState([]);
   const [noticeText, setNoticeText] = useState("");
   const [toastMsg, setToastMsg] = useState(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -148,6 +143,13 @@ export default function Admin_dashboard() {
       }
     } catch (err) { console.error(err); }
   };
+
+  useEffect(() => {
+    fetch('/api/kiosk/hourly-stats')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setHourlyData(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const fetchAll = () => { fetchMainStats(); fetchWaitingList(); fetchTaskRatio(); fetchCounterStatus(); };

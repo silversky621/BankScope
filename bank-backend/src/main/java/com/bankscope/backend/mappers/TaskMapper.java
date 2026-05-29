@@ -26,6 +26,7 @@ public interface TaskMapper {
     int countAvailableMembers();
     int countAllWaitingPerson();
     List<Map<String, Object>> countWaitingPersonByTaskType();
+    List<Map<String, Object>> selectHourlyTaskCounts();
     int updateTaskStatus(@Param("taskId") Long taskId, @Param("status") String status);
     List<TaskEntity> selectWaitingTasksByUserId(@Param("userId") Integer userId);
     List<TaskEntity> selectWaitingTasksByMemberId(@Param("memberId") Long memberId);

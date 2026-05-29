@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -84,6 +85,13 @@ public class TaskController {
     @ResponseBody
     public Map<String, Integer> getWaitingCountByType() {
         return taskService.getWaitingCountByTaskType();
+    }
+
+    @Operation(summary = "시간대별 예상 혼잡도", description = "과거 완료된 task의 시간대별 분포를 반환합니다.")
+    @GetMapping(value = "/hourly-stats", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<Map<String, Object>> getHourlyStats() {
+        return taskService.getHourlyTaskCounts();
     }
 
     @Operation(summary = "창구 토스", description = "내가 처리할수 없는 업무 창구 토스하기 , task의 memberId와 WAITING 이나 IN_PROGRESS 상태인 업무를 WAITING으로 전환" )

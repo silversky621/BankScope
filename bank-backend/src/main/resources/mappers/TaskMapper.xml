@@ -134,6 +134,15 @@
         WHERE status = 'WAITING';
     </select>
 
+    <select id="selectHourlyTaskCounts" resultType="java.util.Map">
+        SELECT HOUR(created_at) AS hour, COUNT(*) AS cnt
+        FROM bank.task
+        WHERE status = 'COMPLETED'
+          AND HOUR(created_at) BETWEEN 9 AND 17
+        GROUP BY HOUR(created_at)
+        ORDER BY hour
+    </select>
+
     <select id="countWaitingPersonByTaskType" resultType="java.util.Map">
         SELECT task_type AS taskType, COUNT(*) AS cnt
         FROM bank.task
