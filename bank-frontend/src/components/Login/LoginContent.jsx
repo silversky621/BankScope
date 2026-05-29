@@ -16,8 +16,7 @@ const LoginContent = () => {
     }
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
-        residentNumber: ''
+        password: ''
     });
     const [rememberEmail, setRememberEmail] = useState(false);
     const navigate = useNavigate();
@@ -51,8 +50,7 @@ const LoginContent = () => {
         try {
             const queryParams = new URLSearchParams({
                 email: formData.email,
-                password: formData.password,
-                residentNumber: formData.residentNumber
+                password: formData.password
             }).toString();
 
             const response = await fetch(`/api/user/login?${queryParams}`, {
@@ -130,20 +128,6 @@ const LoginContent = () => {
                                 onChange={handleChange}
                                 placeholder="비밀번호를 입력해주세요"
                                 required
-                            />
-                        </div>
-
-                        <div className={styles.inputGroup}>
-                            <label htmlFor="residentNumber">주민등록번호</label>
-                            <input
-                                type="password"
-                                id="residentNumber"
-                                name="residentNumber"
-                                value={formData.residentNumber}
-                                onChange={handleChange}
-                                placeholder="'-' 없이 숫자만 입력해주세요"
-                                required
-                                maxLength="13"
                             />
                         </div>
 

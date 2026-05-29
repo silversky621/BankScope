@@ -98,12 +98,12 @@ public class  UserController {
         return this.userService.getMembers();
     }
 
-    @Operation(summary = "로그인", description = "이메일, 비밀번호, 주민번호를 받아 로그인합니다.")
+    @Operation(summary = "로그인", description = "이메일, 비밀번호를 받아 로그인합니다.")
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postLogin(@Param(value = "email") String email, @Param(value = "password") String password, @Param(value = "residentNumber") String residentNumber, HttpSession session) {
+    public Map<String, Object> postLogin(@Param(value = "email") String email, @Param(value = "password") String password, HttpSession session) {
 
-        UserEntity user = this.userService.login(email, password, residentNumber);
+        UserEntity user = this.userService.login(email, password);
         Map<String, Object> response = new HashMap<>();
         if (user != null && ("customer".equals(user.getUserType()) || "corporate".equals(user.getUserType()))) {
             response.put("result", CommonResult.SUCCESS.name());

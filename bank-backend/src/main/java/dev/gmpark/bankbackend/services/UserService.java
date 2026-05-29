@@ -234,9 +234,9 @@ public class UserService {
         return this.userMapper.selectMembers();
     }
 
-    public UserEntity login(String email, String password, String residentNumber) {
+    public UserEntity login(String email, String password) {
 
-        if( email == null || password == null || residentNumber == null) {
+        if (email == null || password == null) {
             return null;
         }
         // 1. 이메일로 유저를 먼저 찾는다.
@@ -247,9 +247,8 @@ public class UserService {
             return null;
         }
 
-        // 3. 비밀번호는 BCrypt 매칭, 주민번호는 AES 암호화 후 문자열 비교
-        String encryptedResidentNumber = AESUtil.encrypt(residentNumber);
-        if (encoder.matches(password, user.getPassword()) && encryptedResidentNumber.equals(user.getResidentNumber())) {
+        // 3. BCrypt 비밀번호 검증
+        if (encoder.matches(password, user.getPassword())) {
             return user;
         }
 
