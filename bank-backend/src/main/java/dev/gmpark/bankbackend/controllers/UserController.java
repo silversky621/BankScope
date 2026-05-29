@@ -94,7 +94,12 @@ public class  UserController {
     @Operation(summary = "멤버 목록 조회", description = "모든 멤버 정보를 조회합니다.")
     @GetMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public List<MemberEntity> getMembers() {
+    public Object getMembers(HttpSession session) {
+        MemberEntity member = (MemberEntity) session.getAttribute("member");
+        UserEntity user = (UserEntity) session.getAttribute("user");
+        if (member == null && (user == null || !"admin".equals(user.getUserType()))) {
+            return Map.of("result", "FAILURE");
+        }
         return this.userService.getMembers();
     }
 
@@ -186,9 +191,6 @@ public class  UserController {
             response.put("email", user.getEmail());
             response.put("name", user.getName());
             response.put("userType", user.getUserType());
-            response.put("residentNumber", user.getResidentNumber());
-            response.put("identificationNumber", user.getIdentificationNumber());
-            response.put("id", user.getId());
         } else if (member != null) {
             response.put("result", "SUCCESS");
             response.put("type", "member");
@@ -209,20 +211,19 @@ public class  UserController {
     public Map<String, Object> getUserInfo(HttpSession session, @RequestParam(value = "userId") String userId) {
         MemberEntity member = (MemberEntity) session.getAttribute("member");
         Map<String, Object> response = new HashMap<>();
-        if (member != null) {
-            response.put("result", "SUCCESS");
+        if (member == null) {
+            response.put("result", "FAILURE");
+            return response;
         }
 
         Pair<CommonResult, UserEntity> result = this.userService.getUserInfo(Integer.valueOf(userId));
         if (result.getLeft() == CommonResult.SUCCESS) {
             response.put("result", "SUCCESS");
             response.put("user", result.getRight());
-        }
-        else {
+        } else {
             response.put("result", "FAILURE");
         }
         return response;
-
     }
 
     @Operation(summary = "로그아웃", description = "세션을 만료시킵니다.")

@@ -257,9 +257,9 @@ public class UserService {
 
     public CommonResult changePassword(UserEntity user, String oldPassword, String newPassword, String name) {
 
-        /*if( !UserValidator.validatePassword(oldPassword) || !UserValidator.validatePassword(newPassword)) {
+        if (!UserValidator.validatePassword(newPassword)) {
             return CommonResult.FAILURE;
-        }*/
+        }
 
         UserEntity dbUser = this.userMapper.selectUserByEmail(user.getEmail());
         if (dbUser == null) {
