@@ -8,7 +8,7 @@
         <version>3.5.10</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>dev.gmpark</groupId>
+    <groupId>com.bankscope</groupId>
     <artifactId>bank-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>bank-backend</name>
