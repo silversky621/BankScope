@@ -74,9 +74,9 @@
 
 ```mermaid
 flowchart LR
-    Customer(["\<\<actor\>\>\nCustomer\n(고객/키오스크)"])
-    Banker(["\<\<actor\>\>\nBanker\n(행원/관리자)"])
-    Admin(["\<\<actor\>\>\nAdmin\n(관리자)"])
+    Customer(["«actor»\nCustomer\n(고객/키오스크)"])
+    Banker(["«actor»\nBanker\n(행원/관리자)"])
+    Admin(["«actor»\nAdmin\n(관리자)"])
 
     subgraph SYSTEM["SYSTEM"]
         SB["Spring Boot\nBackend (Java)"]
