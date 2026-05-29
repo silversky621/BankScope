@@ -25,6 +25,7 @@ public interface TaskMapper {
     String selectAverageTime();
     int countAvailableMembers();
     int countAllWaitingPerson();
+    List<Map<String, Object>> countWaitingPersonByTaskType();
     int updateTaskStatus(@Param("taskId") Long taskId, @Param("status") String status);
     List<TaskEntity> selectWaitingTasksByUserId(@Param("userId") Integer userId);
     List<TaskEntity> selectWaitingTasksByMemberId(@Param("memberId") Long memberId);

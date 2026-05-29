@@ -1,40 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Kiosk.module.css';
 
 
 const KioskTaskSelect = ({ setFormData, onNext, onPrev, userName }) => {
-    // 현재 활성화된 카테고리 (기본값 0: 빠른 업무)
     const [activeCategory, setActiveCategory] = useState(0);
+    const [waitingCounts, setWaitingCounts] = useState({ '빠른 업무': 0, '상담 업무': 0, '기업 • 특수': 0 });
 
-    // 카테고리 및 세부 업무 데이터
+    useEffect(() => {
+        const fetchWaiting = async () => {
+            try {
+                const res = await fetch('/api/kiosk/waiting-count-by-type');
+                if (res.ok) {
+                    const data = await res.json();
+                    setWaitingCounts(data);
+                }
+            } catch (e) {
+                console.error('대기 인원 조회 실패:', e);
+            }
+        };
+        fetchWaiting();
+        const interval = setInterval(fetchWaiting, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     const categories = [
         {
             id: 0,
             title: '빠른 업무',
             subtitle: 'EXPRESS SERVICE',
             items: ['입출금 계좌개설','입금', '출금','이체','체크카드 발급','통장 비밀번호 변경','카드수령'],
-            footer: '건당 3~5분·대기 3명',
-            columns: 1 // 버튼 배열을 1열로
+            timeLabel: '건당 3~5분',
+            typeKey: '빠른 업무',
+            columns: 1
         },
-        // 계좌/개설, 입/출금 , 체크카드 발급, 통장 비밀번호 재설정
         {
             id: 1,
             title: '상담 업무',
             subtitle: 'CONSULTATION',
             items: ['예금','적금','대출 상환','금융상품가입','신용카드 발급','신용대출','소상공인 대출', '주택담보대출', '전세자금대출', '연금신청'],
-            footer: '건당 10분·대기 11명',
-            columns: 2 // 버튼 배열을 2열로
+            timeLabel: '건당 10분',
+            typeKey: '상담 업무',
+            columns: 2
         },
-        // 예금 · 적금 신규, 청약저축, 신용카드 신청, 모바일뱅킹 · OTP, 대출(전세자금, 주택담보)  , 퇴직연금, 펀드보험 상담
         {
             id: 2,
             title: '기업 • 특수',
             subtitle: 'CORPORATE / SPECIAL',
             items: ['기업대출', '법인계좌 개설','법인카드 발급','부도관리','연체관리'],
-            footer: '건당 25분·대기 2명',
-            columns: 1 // 버튼 배열을 1열로
+            timeLabel: '건당 25분',
+            typeKey: '기업 • 특수',
+            columns: 1
         }
-        // 기업대출, 법인계좌 개설, 부도 · 연체관리
     ];
     // 업무 선택 시 formData에 저장하고 다음 단계로 이동
     const handleTaskClick = (task, taskType) => {
@@ -96,7 +112,7 @@ const KioskTaskSelect = ({ setFormData, onNext, onPrev, userName }) => {
                                     ))}
                                 </div>
                                 <div className={styles.categoryFooter}>
-                                    {cat.footer}
+                                    {cat.timeLabel}·대기 {waitingCounts[cat.typeKey] ?? 0}명
                                 </div>
                             </>
                         )}

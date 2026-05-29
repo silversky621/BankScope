@@ -79,6 +79,13 @@ public class TaskController {
         return String.valueOf(taskService.getAvailableMemberCount());
     }
 
+    @Operation(summary = "카테고리별 대기 인원", description = "빠른 업무/상담 업무/기업 특수 카테고리별 WAITING 상태 task 수를 반환합니다.")
+    @GetMapping(value = "/waiting-count-by-type", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Integer> getWaitingCountByType() {
+        return taskService.getWaitingCountByTaskType();
+    }
+
     @Operation(summary = "창구 토스", description = "내가 처리할수 없는 업무 창구 토스하기 , task의 memberId와 WAITING 이나 IN_PROGRESS 상태인 업무를 WAITING으로 전환" )
     @RequestMapping(value = "/toss", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

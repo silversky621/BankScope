@@ -133,6 +133,13 @@
         FROM bank.task
         WHERE status = 'WAITING';
     </select>
+
+    <select id="countWaitingPersonByTaskType" resultType="java.util.Map">
+        SELECT task_type AS taskType, COUNT(*) AS cnt
+        FROM bank.task
+        WHERE status = 'WAITING'
+        GROUP BY task_type
+    </select>
     <select id="selectTasksByMemberLevel" resultType="com.bankscope.backend.vos.TaskVo">
         SELECT `t1`.`task_id`               AS `taskId`,
                `t1`.`user_id`              AS `userId`,

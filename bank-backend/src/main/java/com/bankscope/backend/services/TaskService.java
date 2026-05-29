@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -146,7 +147,20 @@ public class TaskService {
     }
     public int getTotalWaitingPerson() {
         return taskMapper.countAllWaitingPerson();
+    }
 
+    public Map<String, Integer> getWaitingCountByTaskType() {
+        List<Map<String, Object>> rows = taskMapper.countWaitingPersonByTaskType();
+        Map<String, Integer> result = new java.util.HashMap<>();
+        result.put("빠른 업무", 0);
+        result.put("상담 업무", 0);
+        result.put("기업 • 특수", 0);
+        for (Map<String, Object> row : rows) {
+            String taskType = (String) row.get("taskType");
+            int cnt = ((Number) row.get("cnt")).intValue();
+            result.put(taskType, cnt);
+        }
+        return result;
     }
     public List<TaskVo> getTasksByMemberId(Integer memberId) {
         try {
