@@ -18,6 +18,7 @@
 | 26/05/30 | 2.1.0 | Business purpose 섹션에 추진 배경·문제 정의·프로젝트 목적·포용적 옴니채널 뱅킹 정의 추가 | 최재영 |
 | 26/05/30 | 2.2.0 | System context diagram을 Mermaid flowchart로 전환 | 최재영 |
 | 26/05/30 | 2.3.0 | Concept of operation #2 추천 로직 반영 (AI 서버 직접 피처 조회, 나이 필터링, product_id 직접 사용) | 최재영 |
+| 26/05/30 | 2.4.0 | 전체 문서 정합성 수정 (BCrypt/AES 구분, AI 서버 직접 호출 반영, 22개 피처 명세) | 최재영 |
 
 ---
 
@@ -83,21 +84,22 @@ flowchart LR
         SB["Spring Boot\nBackend (Java)"]
         AI["FastAPI AI Server (Python)\n─ RF 분류 모델\n─ 코사인 추천\n─ Gemini 챗봇"]
         DB[("MySQL DB")]
-        SB <--> AI
         SB --> DB
+        AI --> DB
     end
 
-    Customer -->|"1. 로그인/회원가입"| SB
-    SB -->|"2. AI 추천 상품"| Customer
-    Customer -->|"3. 번호표 발급 요청"| SB
-    SB -->|"4. AI 창구 배정/순번"| Customer
-    Banker -->|"5. 로그인"| SB
-    SB -->|"6. 대기열 조회"| Banker
-    Banker -->|"7. 고객 호출/완료"| SB
-    Admin -->|"관리자 기능"| SB
+    Customer -->|"1. 로그인/회원가입 (/api)"| SB
+    Customer -->|"2. AI 추천 요청 (/py/recommend)"| AI
+    AI -->|"3. 추천 상품 반환"| Customer
+    Customer -->|"4. 번호표 자동접수 (/py/auto-insert-task)"| AI
+    AI -->|"5. 창구 배정/순번 반환"| Customer
+    Customer -->|"6. 챗봇 상담 (/py/chat)"| AI
+    Banker -->|"7. 로그인·대기열 관리 (/api)"| SB
+    Banker -->|"8. 고객 추천상품 조회 (/py/recommend)"| AI
+    Admin -->|"관리자 기능 (/api)"| SB
 ```
 
-시스템의 중심에는 Spring Boot 백엔드와 Python FastAPI AI 서버가 협력하며 MySQL DB와 데이터를 공유한다. Customer는 웹 브라우저를 통해 고객 서비스 또는 키오스크 UI로 접근하며, Banker는 창구 관리 전용 화면을, Admin은 관리자 대시보드를 통해 시스템과 상호작용한다.
+프론트엔드는 경로 prefix에 따라 요청을 분기한다. `/api/*`는 Spring Boot 백엔드로, `/py/*`는 FastAPI AI 서버로 직접 라우팅된다(Vite proxy/Nginx). Spring Boot와 AI 서버는 각각 독립적으로 MySQL DB에 접근하며, 두 서버 간 직접 통신은 없다.
 
 ---
 
@@ -165,16 +167,16 @@ flowchart LR
 | | |
 |---|---|
 | **Purpose** | 고객·행원·관리자의 역할을 명확히 식별하여 각 권한에 맞는 기능만 노출하고, AI가 고객 데이터를 올바르게 조회할 수 있도록 고유 ID가 필요하다. |
-| **Approach** | 회원가입 시 비밀번호는 AES 암호화하여 DB에 저장한다. 로그인 성공 시 서버 세션에 사용자 정보를 저장하고, 권한(user_type)에 따라 고객 메인화면(role=0), 행원 워크스페이스(member 세션), 관리자 대시보드로 라우팅한다. |
+| **Approach** | 회원가입 시 비밀번호는 BCrypt 단방향 해싱하여 DB에 저장하고, 주민등록번호는 AES 양방향 암호화하여 저장한다. 로그인 성공 시 서버 세션에 사용자 정보를 저장하고, 권한(user_type)에 따라 고객 메인화면, 행원 워크스페이스, 관리자 대시보드로 라우팅한다. |
 | **Dynamics** | 서비스를 처음 이용하거나 기존 계정으로 로그인하는 경우. |
-| **Goals** | AES 암호화 기반의 안전한 인증 및 역할(Role)별 기능 접근 제어. |
+| **Goals** | BCrypt 해싱 기반의 안전한 비밀번호 인증 및 역할(Role)별 기능 접근 제어. |
 
 ### 2) Recommend Financial Products
 
 | | |
 |---|---|
 | **Purpose** | 수십 가지 금융 상품 중 고객이 직접 탐색하는 수고를 줄이고, 플랫폼 방문 즉시 관련성 높은 상품을 제시하여 만족도를 높인다. |
-| **Approach** | 고객 로그인 시 Spring Boot 백엔드가 `user_id`만 포함하여 Python AI 서버(`GET /py/recommend/{user_id}`)를 호출한다. AI 서버는 DB에서 직접 해당 고객의 5개 피처(나이, 법인 여부, 총 잔액, 대출 보유 여부, 최근 1개월 거래 횟수)를 조회하고, MinMaxScaler 정규화 후 Cosine Similarity로 학습 데이터 내 유사 고객 프로파일 상위 20건을 추출하여 가장 많이 가입한 상품 Top 3의 product_id를 선정한다. 이후 고객의 나이에 대한 가입 연령 조건(min_age/max_age)을 필터링하여 조건에 맞는 상품의 상세 정보를 포함한 최종 목록을 Spring Boot에 반환한다. 추천 모델의 학습 데이터는 product_id가 직접 포함된 CSV 가상 데이터와 실제 DB `product_subscription` 데이터를 서버 시작 시 자동 병합하여 구성하며, CSV에 product_id를 직접 저장하므로 상품명 변경 시에도 데이터 무결성이 유지된다. |
+| **Approach** | 고객 로그인 후 메인 화면 진입 시 프론트엔드가 AI 서버(`GET /py/recommend/{user_id}`)를 직접 호출한다. AI 서버는 DB에서 직접 해당 고객의 5개 피처(나이, 법인 여부, 총 잔액, 대출 보유 여부, 최근 1개월 거래 횟수)를 조회하고, MinMaxScaler 정규화 후 Cosine Similarity로 학습 데이터 내 유사 고객 프로파일 상위 20건을 추출하여 가장 많이 가입한 상품 Top 3의 product_id를 선정한다. 이후 고객의 나이에 대한 가입 연령 조건(min_age/max_age)을 필터링하여 조건에 맞는 상품의 상세 정보를 포함한 최종 목록을 프론트엔드에 직접 반환한다. 추천 모델의 학습 데이터는 product_id가 직접 포함된 CSV 가상 데이터와 실제 DB `product_subscription` 데이터를 서버 시작 시 자동 병합하여 구성하며, CSV에 product_id를 직접 저장하므로 상품명 변경 시에도 데이터 무결성이 유지된다. |
 | **Dynamics** | 고객이 로그인 직후 메인 화면에 진입하는 경우. |
 | **Goals** | 맞춤형 큐레이션을 통해 고객의 상품 탐색 시간 단축 및 개인화 경험 제공. |
 
@@ -183,7 +185,7 @@ flowchart LR
 | | |
 |---|---|
 | **Purpose** | 번호표 선택 오류를 제거하고, 업무 복잡도와 행원 직급·여유 시간을 함께 고려한 최적 창구 자동 배정으로 대기 시간을 단축한다. |
-| **Approach** | 고객이 키오스크에서 접수 버튼을 누르면 Spring Boot 백엔드가 AI 서버(`POST /py/auto-insert-task`)를 호출한다. AI 서버는 DB에서 22개 피처(나이·성별·법인 여부·잔액·계좌 수·대출·카드·예적금·기업 신용등급·최근 거래 패턴·만기 임박 여부 등)를 추출하여 학습된 Random Forest 모델(300트리, 22분류)로 세부 업무 유형을 예측한다. 예측된 업무 유형에 따라 A(빠른 업무, 5분)/B(상담 업무, 10분)/C(기업·특수, 25분) 계열 티켓 번호를 생성하고, 해당 업무를 처리할 수 있는 최소 직급 이상의 행원 중 현재 대기 누적 시간이 가장 짧은 행원에게 FOR UPDATE 행 잠금으로 동시 중복 배정 없이 발급한다. |
+| **Approach** | 고객이 키오스크에서 자동접수 버튼을 누르면 키오스크 프론트엔드가 AI 서버(`POST /py/auto-insert-task`)를 직접 호출한다. AI 서버는 DB에서 22개 피처(`age`, `is_corporate`, `gender`, `total_balance`, `account_count`, `has_active_loan`, `has_overdue_loan`, `has_upcoming_payment`, `has_issuing_card`, `has_check_card`, `has_credit_card`, `has_deposit_sub`, `has_savings_sub`, `default_risk_level`, `recent_deposit_count`, `recent_withdrawal_count`, `recent_transfer_count`, `days_since_last_tx`, `max_password_fail_count`, `has_business_id`, `savings_near_maturity`, `deposit_near_maturity`)를 추출하여 학습된 Random Forest 모델(300트리, 22분류)로 세부 업무 유형을 예측한다. 예측된 업무 유형에 따라 A(빠른 업무, 5분)/B(상담 업무, 10분)/C(기업·특수, 25분) 계열 티켓 번호를 생성하고, 해당 업무를 처리할 수 있는 최소 직급 이상의 행원 중 현재 대기 누적 시간이 가장 짧은 행원에게 FOR UPDATE 행 잠금으로 동시 중복 배정 없이 발급한다. |
 | **Dynamics** | 오프라인 지점을 방문하여 키오스크에서 번호표를 뽑고자 하는 경우. |
 | **Goals** | AI 기반 22분류 업무 예측을 통한 창구 트래픽 자동 분산 및 행원 직급별 최적 배정. |
 
@@ -201,7 +203,7 @@ flowchart LR
 | | |
 |---|---|
 | **Purpose** | 간단한 금융 상품 문의나 사이트 이용 안내를 24시간 자동으로 처리하여 행원 업무 부담을 줄이고 고객 대기 없이 즉시 답변을 제공한다. |
-| **Approach** | 고객이 질문을 입력하면 Spring Boot가 AI 서버(`POST /py/chat`)로 전달한다. AI 서버는 사이트 이용 가이드 텍스트와 현재 DB에서 조회한 활성 금융 상품 목록을 컨텍스트로 구성하여 Google Gemini 2.5 Flash API에 프롬프트를 전송한다. 참조 데이터에 없는 내용은 직접 방문 또는 고객센터 문의를 안내하도록 프롬프트가 설계되어 있다. 사용자당 1일 30건 한도로 제한된다. |
+| **Approach** | 고객이 질문을 입력하면 프론트엔드가 AI 서버(`POST /py/chat`)를 직접 호출한다. AI 서버는 사이트 이용 가이드 텍스트와 현재 DB에서 조회한 활성 금융 상품 목록을 컨텍스트로 구성하여 Google Gemini 2.5 Flash API에 프롬프트를 전송한다. 참조 데이터에 없는 내용은 직접 방문 또는 고객센터 문의를 안내하도록 프롬프트가 설계되어 있다. 사용자당 1일 30건 한도로 제한된다. |
 | **Dynamics** | 고객이 금융 상품, 금리, 이용 방법 등을 웹에서 즉시 문의하는 경우. |
 | **Goals** | LLM 기반 실시간 금융 상담으로 고객 편의 향상 및 단순 문의 자동화. |
 
