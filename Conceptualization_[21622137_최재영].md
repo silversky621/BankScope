@@ -16,6 +16,7 @@
 | 26/03/21 | 1.0.1 | Use Case 및 Concept of operation 수정 | 최재영 |
 | 26/05/20 | 2.0.0 | 실제 구현 및 프로토타이핑 결과를 바탕으로 한 기능 재정의 (RF 22분류, Gemini 챗봇, Admin/Toss 기능 추가 반영) | 최재영 |
 | 26/05/30 | 2.1.0 | Business purpose 섹션에 추진 배경·문제 정의·프로젝트 목적·포용적 옴니채널 뱅킹 정의 추가 | 최재영 |
+| 26/05/30 | 2.2.0 | System context diagram을 Mermaid flowchart로 전환 | 최재영 |
 
 ---
 
@@ -71,26 +72,31 @@
 
 이 프로젝트를 위해 작성한 System Context Diagram의 구조는 아래와 같다.
 
-```
-                                     ┌─────────────────────────────────────────┐
-                                     │                  SYSTEM                 │
-                                     │                                         │
-  <<actor>>                          │  ┌─────────────┐   ┌─────────────────┐ │                <<actor>>
-   Customer  ──[1. 로그인/회원가입]──▶│  │  Spring Boot │   │  FastAPI        │ │◀──[5. 로그인]──  Banker
-  (고객/키오스크)                     │  │  Backend     │◀─▶│  AI Server      │ │                 (행원/관리자)
-             ◀──[2. AI 추천 상품]────│  │  (Java)      │   │  (Python)       │ │
-             ──[3. 번호표 발급 요청]─▶│  │              │   │  - RF 분류 모델 │ │──[6. 대기열 조회]──▶
-             ◀──[4. AI 창구 배정/순번]│  │              │   │  - 코사인 추천  │ │◀──[7. 고객 호출/완료]
-                                     │  └──────┬───────┘   │  - Gemini 챗봇  │ │
-                                     │         │           └─────────────────┘ │
-                                     │         ▼                               │            <<actor>>
-                                     │     MySQL DB                            │──[관리자 기능]── Admin
-                                     └─────────────────────────────────────────┘            (상품/금리/회원 관리)
+```mermaid
+flowchart LR
+    Customer(["\<\<actor\>\>\nCustomer\n(고객/키오스크)"])
+    Banker(["\<\<actor\>\>\nBanker\n(행원/관리자)"])
+    Admin(["\<\<actor\>\>\nAdmin\n(관리자)"])
+
+    subgraph SYSTEM["SYSTEM"]
+        SB["Spring Boot\nBackend (Java)"]
+        AI["FastAPI AI Server (Python)\n─ RF 분류 모델\n─ 코사인 추천\n─ Gemini 챗봇"]
+        DB[("MySQL DB")]
+        SB <--> AI
+        SB --> DB
+    end
+
+    Customer -->|"1. 로그인/회원가입"| SB
+    SB -->|"2. AI 추천 상품"| Customer
+    Customer -->|"3. 번호표 발급 요청"| SB
+    SB -->|"4. AI 창구 배정/순번"| Customer
+    Banker -->|"5. 로그인"| SB
+    SB -->|"6. 대기열 조회"| Banker
+    Banker -->|"7. 고객 호출/완료"| SB
+    Admin -->|"관리자 기능"| SB
 ```
 
 시스템의 중심에는 Spring Boot 백엔드와 Python FastAPI AI 서버가 협력하며 MySQL DB와 데이터를 공유한다. Customer는 웹 브라우저를 통해 고객 서비스 또는 키오스크 UI로 접근하며, Banker는 창구 관리 전용 화면을, Admin은 관리자 대시보드를 통해 시스템과 상호작용한다.
-
-<img width="637" height="173" alt="image" src="https://github.com/user-attachments/assets/19c8b235-0a67-41ab-9e75-53190c09ed95" />
 
 ---
 
