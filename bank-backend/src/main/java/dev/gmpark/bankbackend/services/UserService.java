@@ -16,12 +16,14 @@ import dev.gmpark.bankbackend.valitators.ValidatorUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +31,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String mailFrom;
 
     public CommonResult  register(UserEntity user) {
 
@@ -370,13 +376,13 @@ public class UserService {
         try {
             MimeMessage message = this.mailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
-            messageHelper.setFrom("your-email@gmail.com"); // 보내는 사람 이메일 주소
+            messageHelper.setFrom(mailFrom);
             messageHelper.setTo(email);
             messageHelper.setSubject(subject);
             messageHelper.setText(content, true);
             this.mailSender.send(message);
         } catch (MessagingException e) {
-            // 로깅 추가
+            log.error("[이메일 발송 실패] to={}, type={}, error={}", email, type, e.getMessage());
             return EmailResult.FAILURE;
         }
 
