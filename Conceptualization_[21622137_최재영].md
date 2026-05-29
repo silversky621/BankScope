@@ -17,6 +17,7 @@
 | 26/05/20 | 2.0.0 | 실제 구현 및 프로토타이핑 결과를 바탕으로 한 기능 재정의 (RF 22분류, Gemini 챗봇, Admin/Toss 기능 추가 반영) | 최재영 |
 | 26/05/30 | 2.1.0 | Business purpose 섹션에 추진 배경·문제 정의·프로젝트 목적·포용적 옴니채널 뱅킹 정의 추가 | 최재영 |
 | 26/05/30 | 2.2.0 | System context diagram을 Mermaid flowchart로 전환 | 최재영 |
+| 26/05/30 | 2.3.0 | Concept of operation #2 추천 로직 반영 (AI 서버 직접 피처 조회, 나이 필터링, product_id 직접 사용) | 최재영 |
 
 ---
 
@@ -173,7 +174,7 @@ flowchart LR
 | | |
 |---|---|
 | **Purpose** | 수십 가지 금융 상품 중 고객이 직접 탐색하는 수고를 줄이고, 플랫폼 방문 즉시 관련성 높은 상품을 제시하여 만족도를 높인다. |
-| **Approach** | 고객 로그인 시 Spring Boot 백엔드가 해당 고객의 프로필 데이터를 Python AI 서버(`GET /py/recommend/{user_id}`)로 요청한다. AI 서버는 나이, 법인 여부, 총 잔액, 대출 여부, 최근 거래 횟수 5개 피처에 MinMaxScaler를 적용한 뒤 Cosine Similarity로 가장 유사한 고객 프로파일 상위 20건을 추출하고, 그 고객들이 가장 많이 가입한 상품 Top 3를 반환한다. 추천 모델의 학습 데이터는 CSV 가상 데이터와 실제 DB `product_subscription` 데이터를 시작 시 자동 병합하여 구성한다. |
+| **Approach** | 고객 로그인 시 Spring Boot 백엔드가 `user_id`만 포함하여 Python AI 서버(`GET /py/recommend/{user_id}`)를 호출한다. AI 서버는 DB에서 직접 해당 고객의 5개 피처(나이, 법인 여부, 총 잔액, 대출 보유 여부, 최근 1개월 거래 횟수)를 조회하고, MinMaxScaler 정규화 후 Cosine Similarity로 학습 데이터 내 유사 고객 프로파일 상위 20건을 추출하여 가장 많이 가입한 상품 Top 3의 product_id를 선정한다. 이후 고객의 나이에 대한 가입 연령 조건(min_age/max_age)을 필터링하여 조건에 맞는 상품의 상세 정보를 포함한 최종 목록을 Spring Boot에 반환한다. 추천 모델의 학습 데이터는 product_id가 직접 포함된 CSV 가상 데이터와 실제 DB `product_subscription` 데이터를 서버 시작 시 자동 병합하여 구성하며, CSV에 product_id를 직접 저장하므로 상품명 변경 시에도 데이터 무결성이 유지된다. |
 | **Dynamics** | 고객이 로그인 직후 메인 화면에 진입하는 경우. |
 | **Goals** | 맞춤형 큐레이션을 통해 고객의 상품 탐색 시간 단축 및 개인화 경험 제공. |
 
