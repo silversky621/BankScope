@@ -115,14 +115,8 @@ try:
     base_df = pd.read_csv('bank_data_2.csv')
     try:
         with get_db_cursor() as (conn, cursor):
-            # 상품명 → product_id 매핑 (CSV의 구 상품명을 ID로 변환)
-            cursor.execute("SELECT product_id, product_name FROM financial_product WHERE is_active = 1")
-            name_to_id = {row['product_name']: row['product_id'] for row in cursor.fetchall()}
-
-            # CSV의 target_product(상품명) → product_id 변환, DB에 없는 구 상품 행은 제거
-            base_df['target_product'] = base_df['target_product'].map(name_to_id)
-            base_df = base_df.dropna(subset=['target_product'])
-            base_df['target_product'] = base_df['target_product'].astype(int)
+            # CSV에 product_id 컬럼이 직접 포함되어 있으므로 그대로 사용
+            base_df['target_product'] = base_df['product_id'].astype(int)
 
             cursor.execute("""
                 SELECT
@@ -161,6 +155,7 @@ try:
             merged_df = base_df
             print(f"[추천] 실제 구독 데이터 없음, 기본 데이터 {len(base_df)}건 사용")
     except Exception as e:
+        base_df['target_product'] = base_df['product_id'].astype(int)
         merged_df = base_df
         print(f"[WARN] DB 구독 데이터 로드 실패, 기본 데이터만 사용: {e}")
 
