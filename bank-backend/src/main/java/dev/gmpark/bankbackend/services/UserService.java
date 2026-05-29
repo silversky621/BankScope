@@ -369,7 +369,7 @@ public class UserService {
                 "    </div>\n" +
                 "    <div style=\"margin-top: 24px; border-top: 1px solid #f0f0f0; padding-top: 16px;\">\n" +
                 "        <div style=\"color:#9e9e9e; font-size: 9pt; margin-bottom: 4px;\">&copy; " + java.time.Year.now().getValue() + " BankScope. All rights reserved.</div>\n" +
-                "        <div style=\"color:#9e9e9e; font-size: 9pt;\">https://www.bankscope.gmpark.dev</div>\n" +
+                "        <div style=\"color:#9e9e9e; font-size: 9pt;\">BankScope</div>\n" +
                 "    </div>\n" +
                 "</div>";
 
