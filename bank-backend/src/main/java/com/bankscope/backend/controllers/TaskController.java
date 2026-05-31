@@ -1,10 +1,12 @@
 package com.bankscope.backend.controllers;
 
+import com.bankscope.backend.dtos.RiskDto;
 import com.bankscope.backend.dtos.TaskRequestDto;
 import com.bankscope.backend.entities.MemberEntity;
 import com.bankscope.backend.entities.UserEntity;
 import com.bankscope.backend.results.CommonResult;
 import com.bankscope.backend.results.TaskResult;
+import com.bankscope.backend.services.RiskService;
 import com.bankscope.backend.services.TaskService;
 import com.bankscope.backend.vos.TaskVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
+    private final RiskService riskService;
 
     @Operation(summary = "대기표 발급", description = "업무 유형을 받아 대기표를 발급합니다.")
     @RequestMapping(value = "/task",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
@@ -108,6 +111,26 @@ public class TaskController {
         }
         TaskResult result = this.taskService.tossTask(taskId, targetMemberId);
         response.put("result", result.name());
+        return response;
+    }
+
+    @Operation(summary = "고객 리스크 조회", description = "고객의 대출 및 연체 정보를 기반으로 리스크를 백분율 점수로 조회합니다.")
+    @RequestMapping(value = "/risk-score", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, Object> getRiskScore(@RequestParam("userId") Integer userId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            RiskDto data = riskService.getUserRiskStatus(userId);
+            if (data == null) {
+                response.put("result", "FAILURE");
+                response.put("message", "해당 유저 정보를 찾을 수 없습니다.");
+            } else {
+                response.put("result", "SUCCESS");
+                response.put("data", data);
+            }
+        } catch (Exception e) {
+            response.put("result", "ERROR");
+            response.put("message", "리스크 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
         return response;
     }
 

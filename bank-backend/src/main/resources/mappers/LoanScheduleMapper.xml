@@ -84,10 +84,11 @@
         AND status IN ('SCHEDULED', 'OVERDUE')
     </update>
 
-    <delete id="deleteFutureSchedules">
-        DELETE FROM `bank`.`loan_schedule`
+    <update id="deleteFutureSchedules">
+        UPDATE `bank`.`loan_schedule`
+        SET status = 'CANCELLED'
         WHERE loan_id = #{loanId}
         AND status = 'SCHEDULED'
         AND due_date >= CURDATE()
-    </delete>
+    </update>
 </mapper>

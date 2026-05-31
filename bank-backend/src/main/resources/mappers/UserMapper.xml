@@ -7,7 +7,7 @@
     <insert id="insertUser"
             useGeneratedKeys="true"
             keyColumn="id"
-            keyProperty="user.id">
+            keyProperty="id">
         INSERT INTO `bank`.`user` (user_type, name, email, password, resident_number, identification_number,phone, gender, age,is_terms_agreed)
         VALUES (
                 IFNULL(#{user.userType} , 'customer'),
@@ -24,7 +24,7 @@
     <insert id="insertMember"
             useGeneratedKeys="true"
             keyColumn="id"
-            keyProperty="member.id">
+            keyProperty="id">
         INSERT INTO `bank`.`member` (name, email, password,level,auth,team,counter_number,status,join_date,last_login,created_at)
         VALUES (#{member.name},
                 #{member.email},
