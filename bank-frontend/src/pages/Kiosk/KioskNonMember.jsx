@@ -95,20 +95,12 @@ const KioskNonMember = ({ setFormData, onNext, onPrev }) => {
                         const loginData = await loginResponse.json();
                         switch (loginData.result) {
                             case 'SUCCESS': {
-                                // 로그인 성공 시 세션에서 userId 함께 저장
-                                let userId = null;
-                                const sessionResponse = await fetch('/api/user/session');
-                                if (sessionResponse.ok) {
-                                    const sessionData = await sessionResponse.json();
-                                    if (sessionData.result === 'SUCCESS') {
-                                        userId = sessionData.id ?? null;
-                                    }
-                                }
+                                // 키오스크는 세션리스로 동작하므로 로그인 응답의 userId를 직접 사용한다.
                                 setFormData(prev => ({
                                     ...prev,
                                     ssn: fullSsn,
                                     userName: localData.name,
-                                    userId,
+                                    userId: loginData.userId ?? null,
                                 }));
 
                                 // 성공 모달 띄우기

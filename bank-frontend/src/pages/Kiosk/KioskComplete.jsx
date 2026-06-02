@@ -42,6 +42,7 @@ const KioskComplete = ({ formData, onGoHome, /*onAddMore,*/ userName, isAiMode }
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
+                            userId: formData.userId,
                             taskType: formData.taskType,
                             taskDetailType: formData.task
                         }),
@@ -59,7 +60,7 @@ const KioskComplete = ({ formData, onGoHome, /*onAddMore,*/ userName, isAiMode }
                                 memberId = task.member_id;
                             } else {
                                 // 직접 접수 성공 시, /api/kiosk/task 로 다시 조회해서 결과 세팅
-                                const checkResponse = await fetch('/api/kiosk/task');
+                                const checkResponse = await fetch(`/api/kiosk/task?userId=${formData.userId}`);
                                 if (checkResponse.ok) {
                                     const checkData = await checkResponse.json();
                                     if (checkData.result === 'SUCCESS') {

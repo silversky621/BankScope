@@ -46,23 +46,11 @@ const KioskLogin = ({ formData, setFormData, onNext, onPrev }) => {
 
                     switch (data.result) {
                         case 'SUCCESS':
-                            // 성공 시 세션 정보를 다시 조회하여 사용자 이름 가져오기
-                            { const sessionResponse = await fetch('/api/user/session');
-                            if (sessionResponse.ok) {
-                                const sessionData = await sessionResponse.json();
-                                console.log("세션 응답 데이터 전체:", sessionData); // 💡 서버가 id를 주는지 전체 확인
-                                
-                                if (sessionData.result === 'SUCCESS') {
-                                    // userId도 함께 저장하도록 수정 (서버 응답 형태에 맞게 대비: id, userId, user.id 등)
-                                    const extractedUserId = sessionData.id || sessionData.userId || sessionData.user?.id || data.user?.id || data.id;
-                                    console.log("최종 추출된 유저 ID:", extractedUserId);
-
-                                    setFormData(prev => ({ ...prev, userName: sessionData.name, userId: extractedUserId }));
-                                }
-                            }
+                            // 키오스크는 세션리스로 동작하므로 로그인 응답의 userId/userName을 직접 사용한다.
+                            setFormData(prev => ({ ...prev, userName: data.userName, userId: data.userId }));
                             setModalMessage('고객정보가 확인되었습니다.\n접수 화면으로 넘어갑니다.');
                             setIsModalOpen(true);
-                            break; }
+                            break;
                             
                         case 'FAILURE_NOT_ALLOWED':
                             setModalMessage('유효하지않은 사용자입니다.\n접근을 거부합니다.');

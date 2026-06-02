@@ -31,31 +31,30 @@ public class TaskController {
 
     @Operation(summary = "대기표 발급", description = "업무 유형을 받아 대기표를 발급합니다.")
     @RequestMapping(value = "/task",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> createTask(@RequestBody TaskRequestDto requestDto, HttpSession session) {
+    public Map<String, Object> createTask(@RequestBody TaskRequestDto requestDto) {
         Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
 
-        if (user == null) {
+        // 키오스크는 세션리스로 동작하므로 요청 본문의 userId를 사용한다.
+        if (requestDto.getUserId() == null) {
             response.put("result", CommonResult.FAILURE.name());
-            response.put("message", "로그인이 필요합니다.");
+            response.put("message", "고객 정보가 필요합니다.");
             return response;
         }
 
-        TaskResult result = taskService.createTask(requestDto, user.getId());
+        TaskResult result = taskService.createTask(requestDto, requestDto.getUserId());
         response.put("result", result.name());
         return response;
     }
     @Operation(summary = "대기표 발급 확인", description = "업무 유형입력하여 발급된 대기표를 고객이 확인하기 위한 api입니다. ( 고객의 가장 최근 데이터를 반환 )")
     @RequestMapping(value = "/task", method = RequestMethod.GET , produces =  MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> getTask(HttpSession session) {
+    public Map<String, Object> getTask(@RequestParam(value = "userId") Integer userId) {
         Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        if (user == null) {
+        if (userId == null) {
             response.put("result", CommonResult.FAILURE.name());
             return response;
         }
-        TaskVo task = taskService.getLatestTask(user.getId());
+        TaskVo task = taskService.getLatestTask(userId);
         if (task != null) {
             response.put("result", CommonResult.SUCCESS.name());
             response.put("task", task);

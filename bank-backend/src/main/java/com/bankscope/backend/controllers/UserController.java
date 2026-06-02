@@ -130,20 +130,18 @@ public class  UserController {
     @Operation(summary = "키오스크 로그인", description = "주민번호를 받아 로그인합니다.")
     @RequestMapping(value = "/kiosk/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postKioskLogin(@Param(value = "residentNumber") String residentNumber, HttpSession session) {
+    public Map<String, Object> postKioskLogin(@Param(value = "residentNumber") String residentNumber) {
         UserEntity user = this.userService.loginKiosk(residentNumber);
         Map<String, Object> response = new HashMap<>();
 
-        /*if( !UserValidator.validateResidentNumber(residentNumber) ) {
-            response.put("result", CommonResult.FAILURE.name());
-            return response;
-        }*/
-
+        // 키오스크 로그인은 웹 세션을 생성하지 않는다(세션리스).
+        // 주민번호 인증 통과 시 userId/userName을 직접 반환하고, 이후 접수 요청은 userId를 파라미터로 전달한다.
+        // 이를 통해 키오스크와 웹의 세션이 완전히 독립되어 동시 사용 시에도 서로 간섭하지 않는다.
         if (user != null) {
             if ("customer".equals(user.getUserType()) || "unregisterCustomer".equals(user.getUserType()) || "corporate".equals(user.getUserType())) {
                 response.put("result", CommonResult.SUCCESS.name());
-                session.setAttribute("user", user);
-                session.setAttribute("loginType", "kiosk");
+                response.put("userId", user.getId());
+                response.put("userName", user.getName());
             } else {
                 response.put("result", "FAILURE_NOT_ALLOWED");
             }
