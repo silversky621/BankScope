@@ -12,11 +12,13 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +30,7 @@ public class  UserController {
 
     private final UserService userService;
     private final TaskService taskService;
+    private final StringRedisTemplate redisTemplate;
 
     @Operation(summary = "회원가입", description = "이름, 이메일, 비밀번호, 주민번호를 받아 회원을 등록합니다. 기업회원의 경우 사업자 번호도 함께 입력해야하고 , 키오스크 가입 회원의 경우 웹사이트 회원으로 전환됩니다.")
     @RequestMapping(value = "/register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,6 +115,11 @@ public class  UserController {
         if (user != null && ("customer".equals(user.getUserType()) || "corporate".equals(user.getUserType()))) {
             response.put("result", CommonResult.SUCCESS.name());
             session.setAttribute("user", user);
+            redisTemplate.opsForValue().set(
+                "bankscope:chat:" + session.getId(),
+                String.valueOf(user.getId()),
+                Duration.ofHours(2)
+            );
         } else {
             response.put("result", CommonResult.FAILURE.name());
         }
@@ -234,6 +242,7 @@ public class  UserController {
             this.taskService.reassignTasksOnMemberLogout(member.getId());
             this.userService.setMemberStatus(member.getEmail(), 0);
         }
+        redisTemplate.delete("bankscope:chat:" + session.getId());
         session.invalidate();
         Map<String, Object> response = new HashMap<>();
         response.put("result", "SUCCESS");

@@ -1,4 +1,5 @@
 import os
+import base64
 import contextlib
 import joblib
 from datetime import datetime
@@ -10,13 +11,14 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import mysql.connector
 from mysql.connector import pooling
 from mysql.connector.errors import Error
 from fastapi.middleware.cors import CORSMiddleware
+import redis
 import chatbot_service
 from recommender import ProductRecommender
 
@@ -30,6 +32,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+try:
+    redis_client = redis.Redis(
+        host=os.getenv('REDIS_HOST', 'localhost'),
+        port=int(os.getenv('REDIS_PORT', 6379)),
+        decode_responses=True
+    )
+    redis_client.ping()
+    print("[OK] Redis 연결 성공")
+except Exception as e:
+    print(f"[WARN] Redis 연결 실패: {e}")
+    redis_client = None
 
 try:
     model = joblib.load('bank_model.pkl')
@@ -170,7 +184,6 @@ class AutoTaskRequest(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    user_id: int
     message: str
 
 
@@ -473,10 +486,33 @@ def auto_insert_task(req: AutoTaskRequest):
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 
-@app.post("/py/chat")
-async def chat_bot(req: ChatRequest):
+def get_user_id_from_session(request: Request) -> int | None:
+    if redis_client is None:
+        return None
+    session_cookie = request.cookies.get("SESSION", "")
+    if not session_cookie:
+        return None
     try:
-        response_data = chatbot_service.get_chat_response(req.user_id, req.message, get_db_cursor)
+        padding = 4 - len(session_cookie) % 4
+        session_id = base64.urlsafe_b64decode(session_cookie + "=" * padding).decode("utf-8")
+        user_id = redis_client.get(f"bankscope:chat:{session_id}")
+        return int(user_id) if user_id else None
+    except Exception:
+        return None
+
+
+@app.post("/py/chat")
+async def chat_bot(req: ChatRequest, request: Request):
+    user_id = get_user_id_from_session(request)
+    if not user_id:
+        return {
+            "result": "FAILURE",
+            "sender": "bot",
+            "content": "챗봇 서비스는 로그인 후 이용 가능합니다.",
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    try:
+        response_data = chatbot_service.get_chat_response(user_id, req.message, get_db_cursor)
         return {"result": "SUCCESS", **response_data}
     except Exception as e:
         return {

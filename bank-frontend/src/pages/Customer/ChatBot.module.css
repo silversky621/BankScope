@@ -125,3 +125,15 @@
   align-items: center;
   justify-content: center;
 }
+
+.loginRequired {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+}

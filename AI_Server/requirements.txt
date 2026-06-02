@@ -10,3 +10,4 @@ python-dotenv==1.2.2
 shap==0.51.0
 matplotlib==3.10.9
 requests==2.33.1
+redis==5.2.1

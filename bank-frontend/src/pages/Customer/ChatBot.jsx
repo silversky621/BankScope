@@ -9,7 +9,7 @@ const ChatBot = () => {
         { sender: "banker", text: "안녕하세요! 무엇을 도와드릴까요?" }
     ]);
     const [isLoading, setIsLoading] = useState(false);
-    const [userId, setUserId] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const chatEndRef = useRef(null);
 
     useEffect(() => {
@@ -21,14 +21,14 @@ const ChatBot = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.result === 'SUCCESS' && data.type === 'user') {
-                    setUserId(data.id);
+                    setIsLoggedIn(true);
                 }
             })
             .catch(() => {});
     }, []);
 
     const onSend = async () => {
-        if (!input.trim() || isLoading) return;
+        if (!input.trim() || isLoading || !isLoggedIn) return;
 
         const userMessage = input.trim();
         setMessages(prev => [...prev, { sender: "customer", text: userMessage }]);
@@ -39,7 +39,7 @@ const ChatBot = () => {
             const response = await fetch('/py/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId ?? 0, message: userMessage }),
+                body: JSON.stringify({ message: userMessage }),
             });
             const data = await response.json();
 
@@ -59,7 +59,6 @@ const ChatBot = () => {
 
     return (
         <div className={styles.chatbotContainer}>
-            {/* 챗봇 창 - 기존 ChatModal 구조 참고 */}
             {isOpen && (
                 <div className={styles.chatWindow}>
                     <div className={styles.chatHeader}>
@@ -67,43 +66,50 @@ const ChatBot = () => {
                         <button className={styles.chatCloseBtn} onClick={toggleChat}><span>✕</span></button>
                     </div>
 
-                    <div className={styles.chatBody}>
-                        {messages.map((msg, index) => (
-                            <div
-                                key={index}
-                                className={
-                                    msg.sender === "customer"
-                                        ? styles.customerMsg
-                                        : styles.bankerMsg
-                                }
-                            >
-                                {msg.text}
+                    {isLoggedIn ? (
+                        <>
+                            <div className={styles.chatBody}>
+                                {messages.map((msg, index) => (
+                                    <div
+                                        key={index}
+                                        className={
+                                            msg.sender === "customer"
+                                                ? styles.customerMsg
+                                                : styles.bankerMsg
+                                        }
+                                    >
+                                        {msg.text}
+                                    </div>
+                                ))}
+                                {isLoading && (
+                                    <div className={styles.bankerMsg}>답변을 생성 중입니다...</div>
+                                )}
+                                <div ref={chatEndRef}></div>
                             </div>
-                        ))}
-                        {isLoading && (
-                            <div className={styles.bankerMsg}>답변을 생성 중입니다...</div>
-                        )}
-                        <div ref={chatEndRef}></div>
-                    </div>
 
-                    <div className={styles.chatInput}>
-                        <input
-                            value={input}
-                            placeholder="메시지를 입력하세요..."
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                                    e.preventDefault();
-                                    onSend();
-                                }
-                            }}
-                        />
-                        <button className={styles.sendBtn} onClick={onSend}><span>➤</span></button>
-                    </div>
+                            <div className={styles.chatInput}>
+                                <input
+                                    value={input}
+                                    placeholder="메시지를 입력하세요..."
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                                            e.preventDefault();
+                                            onSend();
+                                        }
+                                    }}
+                                />
+                                <button className={styles.sendBtn} onClick={onSend}><span>➤</span></button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className={styles.loginRequired}>
+                            <p>챗봇 서비스는 로그인 후 이용 가능합니다.</p>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* 플로팅 버튼 */}
             <button className={styles.floatingButton} onClick={toggleChat}>
                 <img src={chatbotImg} alt="챗봇 버튼" />
             </button>
