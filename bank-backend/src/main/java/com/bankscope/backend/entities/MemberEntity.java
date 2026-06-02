@@ -1,6 +1,7 @@
 package com.bankscope.backend.entities;
 
 import lombok.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class MemberEntity {
+public class MemberEntity implements Serializable {
     private Long id;
     private String email;
     private String password;
