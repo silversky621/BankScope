@@ -115,6 +115,7 @@ public class  UserController {
         if (user != null && ("customer".equals(user.getUserType()) || "corporate".equals(user.getUserType()))) {
             response.put("result", CommonResult.SUCCESS.name());
             session.setAttribute("user", user);
+            session.setAttribute("loginType", "web");
             redisTemplate.opsForValue().set(
                 "bankscope:chat:" + session.getId(),
                 String.valueOf(user.getId()),
@@ -142,6 +143,7 @@ public class  UserController {
             if ("customer".equals(user.getUserType()) || "unregisterCustomer".equals(user.getUserType()) || "corporate".equals(user.getUserType())) {
                 response.put("result", CommonResult.SUCCESS.name());
                 session.setAttribute("user", user);
+                session.setAttribute("loginType", "kiosk");
             } else {
                 response.put("result", "FAILURE_NOT_ALLOWED");
             }
@@ -198,6 +200,7 @@ public class  UserController {
             response.put("email", user.getEmail());
             response.put("name", user.getName());
             response.put("userType", user.getUserType());
+            response.put("loginType", session.getAttribute("loginType"));
         } else if (member != null) {
             response.put("result", "SUCCESS");
             response.put("type", "member");
@@ -257,6 +260,9 @@ public class  UserController {
         UserEntity user = (UserEntity) session.getAttribute("user");
         if (user == null) {
             return Map.of("result", CommonResult.FAILURE_SESSION.name());
+        }
+        if (!"web".equals(session.getAttribute("loginType"))) {
+            return Map.of("result", "FAILURE_NOT_ALLOWED");
         }
 
         String oldPassword = requestBody.get("oldPassword");

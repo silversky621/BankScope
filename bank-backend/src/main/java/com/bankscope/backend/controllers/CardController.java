@@ -40,6 +40,11 @@ public class CardController {
             response.put("result", "FAILURE_SESSION");
             return response;
         }
+        if (!"web".equals(session.getAttribute("loginType"))) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            response.put("message", "카드 발급은 웹 로그인 후 이용 가능합니다.");
+            return response;
+        }
         // 핀번호 인증은 프론트에서 확인해줍니다.
 
         // 3. 🚫 법인(corporate) 회원의 비대면 웹사이트 발급 원천 차단

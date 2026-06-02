@@ -94,6 +94,10 @@ public class LoanController {
             response.put("result", LoanResult.FAILURE_SESSION.name());
             return response;
         }
+        if (!"web".equals(session.getAttribute("loginType"))) {
+            response.put("result", LoanResult.FAILURE_NOT_ALLOWED.name());
+            return response;
+        }
 
         try {
             Integer productId = (Integer) requestBody.get("productId");
