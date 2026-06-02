@@ -25,6 +25,8 @@ public class FinancialProductEntity {
     private Long maxAmount;
     private String description;
     private Boolean isActive;
+    private Integer minAge;
+    private Integer maxAge;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     // 자동 이체 로 할지 직접 납부할지 결정

@@ -10,7 +10,7 @@
         INSERT INTO `bank`.`financial_product`
             (product_category, product_name,target_type ,base_interest_rate, max_interest_rate,
              min_duration_months, max_duration_months, min_amount, max_amount,
-             description, is_active,created_at,updated_at)
+             description, is_active, min_age, max_age, created_at, updated_at)
         VALUES
             (#{product.productCategory},
              #{product.productName},
@@ -23,6 +23,8 @@
              #{product.maxAmount},
              #{product.description},
              #{product.isActive},
+             #{product.minAge},
+             #{product.maxAge},
              #{product.createdAt},
              #{product.updatedAt})
     </insert>
@@ -42,6 +44,8 @@
             max_amount          AS maxAmount,
             description,
             is_active           AS isActive,
+            min_age             AS minAge,
+            max_age             AS maxAge,
             created_at          AS createdAt,
             updated_at          AS updatedAt
         FROM `bank`.`financial_product`
@@ -68,6 +72,8 @@
             max_amount          AS maxAmount,
             description,
             is_active           AS isActive,
+            min_age             AS minAge,
+            max_age             AS maxAge,
             created_at          AS createdAt,
             updated_at          AS updatedAt
         FROM `bank`.`financial_product`
@@ -108,8 +114,10 @@
                max_amount          AS maxAmount,
                description,
                is_active           AS isActive,
+               min_age             AS minAge,
+               max_age             AS maxAge,
                created_at          AS createdAt,
-               updated_at          AS upatedAt
+               updated_at          AS updatedAt
         FROM `bank`.`financial_product`
         WHERE product_id = #{productId}
     </select>
@@ -150,6 +158,12 @@
             </if>
             <if test="product.isActive != null">
                 is_active = #{product.isActive},
+            </if>
+            <if test="product.minAge != null">
+                min_age = #{product.minAge},
+            </if>
+            <if test="product.maxAge != null">
+                max_age = #{product.maxAge},
             </if>
         </set>
         WHERE product_id = #{product.productId}

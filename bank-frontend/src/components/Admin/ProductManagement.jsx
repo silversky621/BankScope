@@ -26,9 +26,11 @@ const ProductManagement = () => {
         targetType: 'ALL',
         minDurationMonths: 0,
         maxDurationMonths: 0,
-        minAmount: 0, 
-        maxAmount: 0, 
-        baseInterestRate: 0.0,    
+        minAmount: 0,
+        maxAmount: 0,
+        minAge: 0,
+        maxAge: 0,
+        baseInterestRate: 0.0,
         maxInterestRate: 0.0,     
         interestType: '단리',    
         isActive: true,         
@@ -253,15 +255,16 @@ const ProductManagement = () => {
                                 <th width="4%">
                                     <input type="checkbox" onChange={handleCheckAll} checked={checkedItems.length === productList.length && productList.length > 0} />
                                 </th>
-                                <th width="16%" className={styles.leftAlign}>상품명</th>
-                                <th width="8%">대상</th>
-                                <th width="10%">가입 기간</th>
-                                <th width="15%">가입 금액</th>
-                                <th width="9%">기본금리</th>
-                                <th width="9%">최고금리</th>
-                                <th width="9%">이자방식</th>
-                                <th width="8%">상태</th>
-                                <th width="12%">관리</th>
+                                <th width="15%" className={styles.leftAlign}>상품명</th>
+                                <th width="7%">대상</th>
+                                <th width="9%">가입 기간</th>
+                                <th width="13%">가입 금액</th>
+                                <th width="9%">가입 나이</th>
+                                <th width="8%">기본금리</th>
+                                <th width="8%">최고금리</th>
+                                <th width="8%">이자방식</th>
+                                <th width="7%">상태</th>
+                                <th width="9%">관리</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -276,6 +279,11 @@ const ProductManagement = () => {
                                         <td className={styles.subText}>{item.minDurationMonths} ~ {item.maxDurationMonths}개월</td>
                                         <td className={styles.subText}>
                                             {item.minAmount ? (item.minAmount / 10000).toLocaleString() : 0}만 ~ {item.maxAmount ? (item.maxAmount / 10000).toLocaleString() : 0}만
+                                        </td>
+                                        <td className={styles.subText}>
+                                            {(item.minAge || item.maxAge)
+                                                ? `${item.minAge || 0} ~ ${item.maxAge || '제한없음'}세`
+                                                : '제한없음'}
                                         </td>
                                         <td className={styles.baseRate}>{item.baseInterestRate?.toFixed(2) || '0.00'}%</td>
                                         <td className={styles.maxRate}>{item.maxInterestRate?.toFixed(2) || '0.00'}%</td>
@@ -295,7 +303,7 @@ const ProductManagement = () => {
                                     </tr>
                                 ))
                             ) : !isLoading ? (
-                                <tr><td colSpan="10" className={styles.empty}>등록된 상품이 없습니다.</td></tr>
+                                <tr><td colSpan="11" className={styles.empty}>등록된 상품이 없습니다.</td></tr>
                             ) : null}
                         </tbody>
                     </table>
@@ -371,7 +379,16 @@ const ProductManagement = () => {
                                         <label>최대 가입금액(원)</label>
                                         <input type="number" name="maxAmount" value={formData.maxAmount} onChange={handleInputChange} />
                                     </div>
-                                    
+
+                                    <div className={styles.adminFormRow}>
+                                        <label>최소 가입나이(세)</label>
+                                        <input type="number" name="minAge" value={formData.minAge ?? 0} onChange={handleInputChange} placeholder="0 = 제한 없음" />
+                                    </div>
+                                    <div className={styles.adminFormRow}>
+                                        <label>최대 가입나이(세)</label>
+                                        <input type="number" name="maxAge" value={formData.maxAge ?? 0} onChange={handleInputChange} placeholder="0 = 제한 없음" />
+                                    </div>
+
                                 </div>
                             </div>
 
