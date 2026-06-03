@@ -28,9 +28,11 @@ const PrivateRoute = ({ children, allowedRoles }) => {
         };
 
         if (!user) {
-            const targetPath = location.pathname.startsWith('/AdminMain') || location.pathname.startsWith('/BankerWorkSpace')
-                ? "/AdminLogin"
-                : "/Login";
+            // location.pathname은 주소창에 입력된 대소문자를 그대로 반환하므로, 소문자로 정규화하여 비교한다.
+            const path = location.pathname.toLowerCase();
+            const targetPath = path.startsWith('/adminmain') || path.startsWith('/bankerworkspace')
+                ? "/adminlogin"
+                : "/login";
             showAlert("로그인이 필요한 서비스입니다.", () => handleNavigation(targetPath));
             return; // Stop further execution in this effect
         }
@@ -38,7 +40,7 @@ const PrivateRoute = ({ children, allowedRoles }) => {
         if (allowedRoles) {
             const userRole = user.type === 'member' ? 'member' : user.userType;
             if (!allowedRoles.includes(userRole)) {
-                const fallbackPath = userRole === 'admin' ? "/AdminMain" : (userRole === 'member' ? "/BankerWorkSpace" : "/");
+                const fallbackPath = userRole === 'admin' ? "/adminmain" : (userRole === 'member' ? "/bankerworkspace" : "/");
                 showAlert("접근 권한이 없습니다.", () => handleNavigation(fallbackPath));
             }
         }
