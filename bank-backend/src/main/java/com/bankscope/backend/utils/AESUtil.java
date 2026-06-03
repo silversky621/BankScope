@@ -1,13 +1,23 @@
 package com.bankscope.backend.utils;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
+@Component
 public class AESUtil {
-    
-    // 16byte 고정 키 (실제 서비스에서는 외부 설정 파일이나 환경변수에서 가져와야 함)
-    private static final String SECRET_KEY = "MySuperSecretKey"; // 16자 필수
+
+    // 16byte 키. 소스에 박지 않고 외부 설정(application.properties / 환경변수)에서 주입한다.
+    // 정적 메서드(encrypt/decrypt) 호출부를 유지하기 위해, Spring이 setter로 주입한 값을 static 필드에 보관한다.
+    private static String SECRET_KEY;
+
+    @Value("${app.aes.secret-key}")
+    public void setSecretKey(String secretKey) {
+        AESUtil.SECRET_KEY = secretKey;
+    }
 
     public static String encrypt(String plainText) {
         try {
