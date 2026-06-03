@@ -100,14 +100,13 @@ public class UserService {
         }
     }
 
-    public CommonResult updateCorporateIdentification(String identificationNumber, String residentNumber) {
-        if (residentNumber == null || identificationNumber == null) {
+    public CommonResult updateCorporateIdentification(String identificationNumber, Integer userId) {
+        if (userId == null || identificationNumber == null) {
             return CommonResult.FAILURE;
         }
 
-        // 주민등록번호 암호화 후 조회
-        String encryptedResidentNumber = AESUtil.encrypt(residentNumber);
-        UserEntity existingUser = this.userMapper.selectUserByResidentNumber(encryptedResidentNumber);
+        // 주민번호를 클라이언트와 왕복시키지 않기 위해 userId로 조회한다.
+        UserEntity existingUser = this.userMapper.selectUserById(userId);
 
         if (existingUser == null) {
             return CommonResult.FAILURE;
@@ -119,7 +118,8 @@ public class UserService {
         }
 
         UserEntity user = new UserEntity();
-        user.setResidentNumber(encryptedResidentNumber);
+        // DB에 저장된 암호화된 주민번호를 업데이트 WHERE 조건으로 그대로 재사용
+        user.setResidentNumber(existingUser.getResidentNumber());
         user.setIdentificationNumber(identificationNumber);
         
         int result = this.userMapper.updateUserIdentificationNumber(user);

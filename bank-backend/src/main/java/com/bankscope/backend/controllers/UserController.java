@@ -57,9 +57,9 @@ public class  UserController {
     @RequestMapping(value = "/update-corporate", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String,Object> updateCorporate(@RequestParam(value = "identificationNumber") String identificationNumber,
-                                              @RequestParam(value = "residentNumber") String residentNumber) {
+                                              @RequestParam(value = "userId") Integer userId) {
         Map<String, Object> response = new HashMap<>();
-        CommonResult result = this.userService.updateCorporateIdentification(identificationNumber, residentNumber);
+        CommonResult result = this.userService.updateCorporateIdentification(identificationNumber, userId);
         response.put("result", result.name());
         return response;
     }
@@ -226,12 +226,27 @@ public class  UserController {
 
         Pair<CommonResult, UserEntity> result = this.userService.getUserInfo(Integer.valueOf(userId));
         if (result.getLeft() == CommonResult.SUCCESS) {
+            UserEntity userInfo = result.getRight();
+            // 주민등록번호는 평문 전체를 노출하지 않고 마스킹하여 응답한다.
+            if (userInfo.getResidentNumber() != null) {
+                userInfo.setResidentNumber(maskResidentNumber(userInfo.getResidentNumber()));
+            }
             response.put("result", "SUCCESS");
-            response.put("user", result.getRight());
+            response.put("user", userInfo);
         } else {
             response.put("result", "FAILURE");
         }
         return response;
+    }
+
+    // 주민등록번호를 생년월일 6자리 + 성별자리만 노출하고 뒤 6자리를 가린다. (예: 900101-1******)
+    private String maskResidentNumber(String residentNumber) {
+        String digits = residentNumber.replace("-", "");
+        if (digits.length() != 13) {
+            // 형식이 예상과 다르면 전체를 가린다.
+            return "*".repeat(residentNumber.length());
+        }
+        return digits.substring(0, 6) + "-" + digits.charAt(6) + "******";
     }
 
     @Operation(summary = "로그아웃", description = "세션을 만료시킵니다.")

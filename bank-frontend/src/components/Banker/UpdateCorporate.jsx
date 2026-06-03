@@ -71,19 +71,19 @@ const UpdateCorporate = ({ selectedTask, onCancel, onComplete }) => {
             return;
         }
 
-        if (!customerInfo || !customerInfo.residentNumber) {
-            showAlert("고객의 주민등록번호 정보를 확인할 수 없습니다.");
+        const userId = selectedTask?.userId;
+        if (!userId) {
+            showAlert("고객 정보를 확인할 수 없습니다.");
             return;
         }
 
         try {
-            // 하이픈 제거 후 전송
+            // 하이픈 제거 후 전송. 사용자 식별은 주민번호 대신 userId로 한다(주민번호 왕복 방지).
             const cleanIdentificationNumber = identificationNumber.replace(/-/g, '');
-            const cleanResidentNumber = customerInfo.residentNumber.replace(/-/g, ''); // 혹시 모를 하이픈 제거
 
             const formData = new URLSearchParams();
             formData.append('identificationNumber', cleanIdentificationNumber);
-            formData.append('residentNumber', cleanResidentNumber);
+            formData.append('userId', userId);
 
             const response = await fetch('/api/user/update-corporate', {
                 method: 'POST',
