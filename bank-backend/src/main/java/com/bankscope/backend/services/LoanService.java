@@ -278,35 +278,58 @@ public class LoanService {
     public void generateAndSaveLoanSchedules(int loanId, Long principalAmount, int termMonths, BigDecimal annualInterestRate, LocalDate approvalDate) {
         List<LoanScheduleEntity> schedules = new ArrayList<>();
 
-        long monthlyPrincipal = principalAmount / termMonths;
-        // 1200으로 한 번에 나누기 (소수점 10자리까지 구하고 반올림)
-        BigDecimal monthlyInterestRate = annualInterestRate.divide(
-                new BigDecimal("1200"),
-                10, // 소수점 10자리 (필요에 따라 조절)
-                RoundingMode.HALF_UP // 반올림 (사사오입)
-        );
-        long totalAllocatedPrincipal = 0L;
+        // 1. 월 이자율 계산 (연 이율 / 12 / 100)
+        BigDecimal monthlyRate = annualInterestRate.divide(new BigDecimal("1200"), 10, RoundingMode.HALF_UP);
+
+        // 2. 원리금 균등 상환금 계산
+        long fixedMonthlyRepayment;
+        if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
+            // 무이자(0%) 상품은 분모가 0이 되어 공식 적용 불가 → 원금만 균등 분할
+            fixedMonthlyRepayment = principalAmount / termMonths;
+        } else {
+            // 공식: P * r * (1+r)^n / ((1+r)^n - 1)
+            BigDecimal onePlusRateN = monthlyRate.add(BigDecimal.ONE).pow(termMonths);
+            fixedMonthlyRepayment = BigDecimal.valueOf(principalAmount)
+                    .multiply(monthlyRate)
+                    .multiply(onePlusRateN)
+                    .divide(onePlusRateN.subtract(BigDecimal.ONE), 0, RoundingMode.HALF_UP)
+                    .longValueExact();
+        }
+        long remainingPrincipal = principalAmount;
 
         for (int i = 1; i <= termMonths; i++) {
             LocalDate dueDate = approvalDate.plusMonths(i);
 
-            long currentPrincipal = (i == termMonths) ? (principalAmount - totalAllocatedPrincipal) : monthlyPrincipal;
-            long remainingPrincipal = principalAmount - totalAllocatedPrincipal;
+            // 3. 이자 계산: 잔여 원금 * 월 이자율
             long monthlyInterest = BigDecimal.valueOf(remainingPrincipal)
-                    .multiply(monthlyInterestRate)
+                    .multiply(monthlyRate)
                     .setScale(0, RoundingMode.HALF_UP)
                     .longValueExact();
-            long totalMonthlyRepayment = currentPrincipal + monthlyInterest;
+
+            // 4. 원금 계산: 총 상환금 - 이자
+            // 마지막 회차는 잔여 원금을 모두 털어내야 하므로 정산 처리
+            long currentPrincipal;
+            long currentRepayment;
+
+            if (i == termMonths) {
+                currentPrincipal = remainingPrincipal;
+                currentRepayment = currentPrincipal + monthlyInterest; // 마지막엔 원금 + 이자
+            } else {
+                currentPrincipal = fixedMonthlyRepayment - monthlyInterest;
+                currentRepayment = fixedMonthlyRepayment;
+            }
 
             LoanScheduleEntity schedule = LoanScheduleEntity.builder()
                     .loanId(loanId)
                     .dueDate(dueDate)
-                    .repayAmount(totalMonthlyRepayment)
+                    .repayAmount(currentRepayment)
                     .status("SCHEDULED")
                     .build();
 
             schedules.add(schedule);
-            totalAllocatedPrincipal += currentPrincipal;
+
+            // 원금 상환 후 잔액 갱신
+            remainingPrincipal -= currentPrincipal;
         }
 
         loanScheduleMapper.insertLoanSchedules(schedules);
