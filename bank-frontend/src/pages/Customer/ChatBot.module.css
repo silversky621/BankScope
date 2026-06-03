@@ -84,6 +84,7 @@
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+  text-align: left;       /* #root의 text-align:center 상속 차단 */
 }
 
 .bankerMsg {
