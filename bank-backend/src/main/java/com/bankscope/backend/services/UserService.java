@@ -229,7 +229,14 @@ public class UserService {
         if (member.getEmail() == null) {
             return CommonResult.FAILURE;
         }
-        member.setPassword(encoder.encode(member.getPassword()));
+        // 비밀번호가 새로 입력된 경우에만 인코딩한다. 비어있으면 null로 두어
+        // 매퍼가 password 컬럼을 건드리지 않게 하여 기존 비밀번호를 보존한다.
+        // (항상 encode 하면, 수정 폼이 빈 값/기존 해시를 보낼 때 이중 인코딩되어 비밀번호가 깨진다.)
+        if (member.getPassword() != null && !member.getPassword().isBlank()) {
+            member.setPassword(encoder.encode(member.getPassword()));
+        } else {
+            member.setPassword(null);
+        }
         int result = this.userMapper.updateMember(member);
         if (result > 0) {
             return CommonResult.SUCCESS;
