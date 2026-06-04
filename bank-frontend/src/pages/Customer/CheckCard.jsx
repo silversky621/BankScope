@@ -95,12 +95,13 @@ const CheckCard = () => {
     if (pinInput.length !== 6) return;
 
     try {
-      const response = await fetch(`/api/pin/confirm?pin=${pinInput}`, {
+      const response = await fetch('/api/pin/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        body: JSON.stringify({ pin: pinInput }),
       });
 
       const data = await response.json();
@@ -164,9 +165,9 @@ const CheckCard = () => {
            const response = await fetch('/api/account/account-password', {
                method: 'POST',
                headers: {
-                   'Content-Type': 'application/x-www-form-urlencoded', // RequestParam은 urlencoded
+                   'Content-Type': 'application/json',
                },
-               body: params.toString()
+               body: JSON.stringify(Object.fromEntries(params))
            });
 
            const data = await response.json();
