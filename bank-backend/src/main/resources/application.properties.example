@@ -28,15 +28,16 @@ spring.session.store-type=redis
 spring.session.redis.flush-mode=on_save
 spring.session.timeout=2h
 
-# 주민번호 보호 키. AES-GCM 키(정확히 16/24/32자) + 블라인드 인덱스용 HMAC 키.
-# ⚠️ V4 마이그레이션이 '아래 값'으로 시드 주민번호를 재암호화/인덱싱하므로,
-#    번들된 시드 데이터를 쓰려면 모든 환경에서 반드시 아래 값을 그대로 사용해야 한다(값을 바꾸면 키오스크 로그인/주민번호 복호화가 깨짐).
-# (실서비스라면 키를 깃에 두지 않고 시크릿 매니저로 주입 + 환경별 키로 런타임 재암호화 마이그레이션을 쓰는 것이 맞다. 본 제출물은 더미 데이터 기준의 타협안.)
-app.aes.secret-key=wCBlSoQjWaaDe68I
-app.hmac.secret-key=qNc4AAgPIjU6joeCgrsBh0c2cBxKNkVq
+# 주민번호 보호 키. AES-GCM 키(정확히 16/24/32바이트) + 블라인드 인덱스용 HMAC 키.
+# V4 Java 마이그레이션이 DB 초기 구성 시 이 값을 읽어 더미 주민번호를 암호화/인덱싱한다.
+# DB가 이미 초기화된 뒤 키를 바꾸면 기존 암호문 복호화가 깨지므로, 키 교체는 별도 재암호화 마이그레이션으로 처리한다.
+# 아래 값은 로컬 데모 기본값이다. 실서비스에서는 환경 변수/시크릿 매니저로 주입한다.
+app.aes.secret-key=demo-aes-key-016
+app.hmac.secret-key=demo-hmac-key-change-me
 
-# Flyway DB 마이그레이션: 앱 기동 시 classpath:db/migration 의 V1(스키마)·V2(시드)를 순서대로 적용·추적
-# 빈 DB면 전체 적용, 이미 데이터가 있는 DB면 baseline 처리하여 재실행하지 않음
+# Flyway DB 마이그레이션: 앱 기동 시 classpath:db/migration 의 V1~V4를 순서대로 적용·추적
+# V1 스키마, V2 시드, V3 게시판 시드, V4 주민번호 AES-GCM 재암호화/HMAC 인덱스 구성
+# 빈 DB면 전체 적용, 이미 데이터가 있는 DB면 baseline 처리 후 이후 마이그레이션만 추적·적용
 spring.flyway.enabled=true
 spring.flyway.schemas=bank
 spring.flyway.create-schemas=true
