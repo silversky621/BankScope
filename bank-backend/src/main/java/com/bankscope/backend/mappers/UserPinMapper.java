@@ -10,5 +10,9 @@ public interface UserPinMapper {
     int insertUserPin(@Param("userId") Integer userId, @Param("pinHash") String pinHash);
     UserPinEntity getUserPin(@Param("userId") Integer userId);
     int deleteUserPin(@Param("userId") Integer userId);
-    int update(@Param("userId") Integer userId, String encodedPin);
+    int update(@Param("userId") Integer userId, @Param("encodedPin") String encodedPin);
+    int resetFailCount(@Param("userId") Integer userId);
+    int recordFailedAttempt(@Param("userId") Integer userId,
+                            @Param("failCount") Integer failCount,
+                            @Param("lockedUntil") java.time.LocalDateTime lockedUntil);
 }

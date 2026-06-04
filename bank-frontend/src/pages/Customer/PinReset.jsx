@@ -134,8 +134,10 @@ const PinReset = () => {
             setIsLoading(true); // 로딩 시작
             try {
                 // 요청하신 형식: /api/pin/confirm?pin=123456 (POST 방식)
-                const response = await fetch(`/api/pin/confirm?pin=${currentPin}`, {
+                const response = await fetch('/api/pin/confirm', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin }),
                 });
                 const data = await response.json();
 
@@ -201,8 +203,10 @@ const PinReset = () => {
             setIsLoading(true); // 로딩 시작
             try {
                 // 요청하신 형식: /api/pin/?pin=123456 (PATCH 방식)
-                const response = await fetch(`/api/pin/?pin=${newPin}`, {
+                const response = await fetch('/api/pin/', {
                     method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: newPin }),
                 });
                 const data = await response.json();
 

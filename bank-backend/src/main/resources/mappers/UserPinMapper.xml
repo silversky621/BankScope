@@ -16,6 +16,22 @@
     <update id="update">
         UPDATE `bank`.`user_pin`
         SET pin_hash = #{encodedPin},
+            fail_count = 0,
+            locked_until = NULL,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+    <update id="resetFailCount">
+        UPDATE `bank`.`user_pin`
+        SET fail_count = 0,
+            locked_until = NULL,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+    <update id="recordFailedAttempt">
+        UPDATE `bank`.`user_pin`
+        SET fail_count = #{failCount},
+            locked_until = #{lockedUntil},
             updated_at = NOW()
         WHERE user_id = #{userId}
     </update>

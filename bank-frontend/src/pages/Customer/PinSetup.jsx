@@ -153,13 +153,13 @@ const PinSetup = () => {
             setIsLoading(true); // 로딩 시작
             try {
                 // 요청하신 형식: /api/pin/?pin=123456 (POST 방식)
-                const response = await fetch(`/api/pin/?pin=${confirmPin}`, {
+                const response = await fetch('/api/pin/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     // 필요한 경우 body에 추가 정보를 담을 수 있습니다.
-                    body: JSON.stringify({ phone: phone }),
+                    body: JSON.stringify({ phone: phone, pin: confirmPin }),
                 });
 
                 const data = await response.json();

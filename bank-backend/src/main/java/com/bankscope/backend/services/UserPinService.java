@@ -12,9 +12,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserPinService {
+    private static final int MAX_FAIL_COUNT = 5;
+    private static final int LOCK_MINUTES = 10;
+
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final SmsService smsService;
     private final UserPinMapper userPinMapper;
@@ -94,9 +99,19 @@ public class UserPinService {
         }
         // 유저의 실패횟수가 3번이 되면 lock이 되고 가맹점에 문의해서 해결하라고 해야함.
         UserPinEntity dbUserPin = this.userPinMapper.getUserPin(user.getId());
+        if (dbUserPin == null || dbUserPin.getPinHash() == null) {
+            return CommonResult.FAILURE;
+        }
+        if (dbUserPin.getLockedUntil() != null && LocalDateTime.now().isBefore(dbUserPin.getLockedUntil())) {
+            return CommonResult.FAILURE;
+        }
         if (BCrypt.checkpw(pin, dbUserPin.getPinHash())) {
+            this.userPinMapper.resetFailCount(user.getId());
             return CommonResult.SUCCESS;
         }
+        int failCount = dbUserPin.getFailCount() == null ? 1 : dbUserPin.getFailCount() + 1;
+        LocalDateTime lockedUntil = failCount >= MAX_FAIL_COUNT ? LocalDateTime.now().plusMinutes(LOCK_MINUTES) : null;
+        this.userPinMapper.recordFailedAttempt(user.getId(), failCount, lockedUntil);
         return CommonResult.FAILURE;
     }
 

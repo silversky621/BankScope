@@ -1,92 +1,93 @@
 package com.bankscope.backend.controllers;
 
-
 import com.bankscope.backend.entities.UserEntity;
 import com.bankscope.backend.results.CommonResult;
 import com.bankscope.backend.results.PinResult;
 import com.bankscope.backend.services.UserPinService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.bankscope.backend.utils.SessionAuth;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Tag(name = "디지털 핀번호", description ="웹사이트 핀번호 관리 API")
 @RestController
 @RequestMapping(value = "/api/pin")
 @RequiredArgsConstructor
 public class UserPinController {
     private final UserPinService userPinService;
-    // 핀번호 등록 api SMS인증후에 가능
 
-    // 핀번호 생성
-    @Operation(summary = "핀번호 생성", description = "유저의 핀번호를 생성합니다.")
-    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postUserPin(HttpSession session, @RequestParam("pin") String pin) {
-        Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
+    public Map<String, Object> postUserPin(
+            HttpSession session,
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "pin", required = false) String pin) {
+
+        UserEntity user = SessionAuth.user(session);
         if (user == null) {
-            return Map.of("result", CommonResult.FAILURE_SESSION.name(), "message", "로그인이 필요합니다.");
+            return Map.of("result", CommonResult.FAILURE_SESSION.name());
         }
-        CommonResult result = this.userPinService.createUserPin(user, pin);
+        CommonResult result = this.userPinService.createUserPin(user, stringValue(body, "pin", pin));
+        Map<String, Object> response = new HashMap<>();
         response.put("result", result.name());
-        if (result == CommonResult.FAILURE) {
-            response.put("message", "인증이 완료되지 않았거나 유효하지 않은 핀 번호입니다.");
-        }
-        
         return response;
     }
-    @Operation(summary = "핀번호 재설정", description = "유저의 핀번호를 재설정 합니다.")
-    @RequestMapping(value = "/", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, Object> patchUserPin(HttpSession session, @RequestParam("pin") String pin) {
-        Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        if (user == null) {
-            return Map.of("result", CommonResult.FAILURE_SESSION.name(), "message", "로그인이 필요합니다.");
 
+    @PatchMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> patchUserPin(
+            HttpSession session,
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "pin", required = false) String pin) {
+
+        UserEntity user = SessionAuth.user(session);
+        if (user == null) {
+            return Map.of("result", CommonResult.FAILURE_SESSION.name());
         }
-        PinResult result = this.userPinService.updateUserPin(user, pin);
-        if ( result == PinResult.SUCCESS) {
-            response.put("result", result.name());
-        }
-        return response;
+        PinResult result = this.userPinService.updateUserPin(user, stringValue(body, "pin", pin));
+        return Map.of("result", result.name());
     }
-    // 핀번호 삭제
-    @Operation(summary = "핀번호 삭제", description = "유저가 등록한 핀번호를 삭제합니다.")
-    @RequestMapping(value = "/", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @DeleteMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> deleteUserPin(HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
+        UserEntity user = SessionAuth.user(session);
         if (user == null) {
-            return Map.of("result", CommonResult.FAILURE_SESSION.name(), "message", "로그인이 필요합니다.");
+            return Map.of("result", CommonResult.FAILURE_SESSION.name());
         }
-        CommonResult serviceResult = this.userPinService.deleteUserPin(user);
-        response.put("result", serviceResult.name());
-        return response;
-    }
-    @Operation(summary = "핀번호 일치조회", description = "유저가 핀번호 등록한 핀번호를 일치조회 여부를 확인합니다.")
-    @RequestMapping(value = "/confirm", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, Object> confirmUserPin(HttpSession session, @RequestParam("pin") String pin) {
-        Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        if (user == null) {
-            return Map.of("result", CommonResult.FAILURE_SESSION.name(), "message", "로그인이 필요합니다.");
-        }
-        CommonResult result = this.userPinService.checkUserPin(user, pin);
-        if ( result.equals(CommonResult.SUCCESS) ) {
-            response.put("result", CommonResult.SUCCESS.name());
-        }else{
-            response.put("result", CommonResult.FAILURE.name());
-        }
-        return response;
+        CommonResult result = this.userPinService.deleteUserPin(user);
+        return Map.of("result", result.name());
     }
 
+    @PostMapping(value = "/confirm", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> confirmUserPin(
+            HttpSession session,
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "pin", required = false) String pin) {
+
+        UserEntity user = SessionAuth.user(session);
+        if (user == null) {
+            return Map.of("result", CommonResult.FAILURE_SESSION.name());
+        }
+        CommonResult result = this.userPinService.checkUserPin(user, stringValue(body, "pin", pin));
+        return Map.of("result", result.name());
+    }
+
+    private static String stringValue(Map<String, Object> body, String key, String fallback) {
+        if (body == null || !body.containsKey(key) || body.get(key) == null) {
+            return fallback;
+        }
+        return String.valueOf(body.get(key));
+    }
 }
