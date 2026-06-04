@@ -97,6 +97,15 @@ public class CardService {
             }
         }
 
+        // 🔁 홈페이지 등에서 이미 신청되어 발급 대기중(ISSUING)인 동일 유형 카드가 있으면,
+        //    새 카드를 만들지 않고 기존 카드를 활성화(ISSUING→ACTIVE)한다. (카드수령 = 신청건 수령 처리, 중복 발급 방지)
+        for (CardEntity existing : this.cardMapper.selectCardsByUserId(targetUser.getId())) {
+            if ("ISSUING".equals(existing.getStatus()) && dto.getCardType().equals(existing.getCardType())) {
+                int activated = this.cardMapper.updateCardStatus(existing.getCardId(), "ACTIVE", targetUser.getId());
+                return activated > 0 ? CommonResult.SUCCESS : CommonResult.FAILURE;
+            }
+        }
+
         CardEntity card = new CardEntity();
 
         // 4. 💳 신용카드 로직 셋업 (타입명에 "CREDIT"이 포함되어 있으면 모두 신용카드로 취급)
