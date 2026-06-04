@@ -6,6 +6,7 @@ import com.bankscope.backend.results.CommonResult;
 import com.bankscope.backend.results.TaskResult;
 import com.bankscope.backend.services.MemberService;
 import com.bankscope.backend.services.TaskService;
+import com.bankscope.backend.utils.SessionAuth;
 import com.bankscope.backend.vos.CounterStatusVo;
 import com.bankscope.backend.vos.DashboardWaitingVo;
 import com.bankscope.backend.vos.TaskVo;
@@ -133,6 +134,10 @@ public class MemberController {
     public Map<String, Object> getTaskRatio( HttpSession session ) {
 
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", CommonResult.FAILURE_SESSION.name());
+            return response;
+        }
         List<Map<String, Object>> ratios = this.memberService.getTaskRatio();
 
         response.put("result", CommonResult.SUCCESS.name());
@@ -144,6 +149,9 @@ public class MemberController {
     @RequestMapping(value = "/counter-status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Pair<CommonResult, List<CounterStatusVo>> getCounterStatus( HttpSession session ) {
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            return Pair.of(CommonResult.FAILURE_SESSION, null);
+        }
         List<CounterStatusVo> statusList = this.memberService.getCounterStatus();
 
         if (statusList != null) {
@@ -158,6 +166,10 @@ public class MemberController {
     @ResponseBody
     public Map<String, Object> getMainStats( HttpSession session ) {
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", CommonResult.FAILURE_SESSION.name());
+            return response;
+        }
         Map<String, Object> stats = memberService.getBranchTotalStats();
 
         response.put("result", "SUCCESS");
@@ -171,6 +183,10 @@ public class MemberController {
     public Map<String, Object> getWaitingList( HttpSession session ) {
 
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", CommonResult.FAILURE_SESSION.name());
+            return response;
+        }
         List<DashboardWaitingVo> waitingList = memberService.getDashboardWaitingList();
 
         response.put("result", "SUCCESS");

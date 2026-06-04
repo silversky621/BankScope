@@ -116,6 +116,21 @@ public class CardController {
             return response;
         }
 
+        // 고객은 제한된 상태 변경만 허용한다: 분실/정지(SUSPENDED), 정지 상태에서의 해제(SUSPENDED→ACTIVE).
+        // 발급대기(ISSUING) 카드의 활성화는 창구 수령 절차이므로 고객 API로는 차단한다(수령 우회 방지).
+        Pair<CommonResult, CardEntity> cardResult = this.cardService.getCardById(cardId, user.getId());
+        if (cardResult.getLeft() != CommonResult.SUCCESS) {
+            response.put("result", "FAILURE");
+            return response;
+        }
+        String current = cardResult.getRight().getStatus();
+        boolean allowed = "SUSPENDED".equals(status)
+                || ("ACTIVE".equals(status) && "SUSPENDED".equals(current));
+        if (!allowed) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+
         CommonResult result = this.cardService.updateCardStatus(cardId, status, user.getId());
         response.put("result", result.name());
         return response;

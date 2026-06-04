@@ -8,6 +8,7 @@ import com.bankscope.backend.results.CommonResult;
 import com.bankscope.backend.results.TaskResult;
 import com.bankscope.backend.services.RiskService;
 import com.bankscope.backend.services.TaskService;
+import com.bankscope.backend.utils.SessionAuth;
 import com.bankscope.backend.vos.TaskVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -115,8 +116,13 @@ public class TaskController {
 
     @Operation(summary = "고객 리스크 조회", description = "고객의 대출 및 연체 정보를 기반으로 리스크를 백분율 점수로 조회합니다.")
     @RequestMapping(value = "/risk-score", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> getRiskScore(@RequestParam("userId") Integer userId) {
+    public Map<String, Object> getRiskScore(@RequestParam("userId") Integer userId, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+        // 고객 리스크 정보는 행원/관리자만 조회 가능
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", "FAILURE_SESSION");
+            return response;
+        }
         try {
             RiskDto data = riskService.getUserRiskStatus(userId);
             if (data == null) {

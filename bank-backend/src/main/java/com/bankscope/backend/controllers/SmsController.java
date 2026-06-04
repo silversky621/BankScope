@@ -24,6 +24,9 @@ public class SmsController {
         String phone = request.get("phone");
         UserEntity user = (UserEntity) session.getAttribute("user");
 
+        if (user == null) {
+            return Map.of("result", "FAILURE_SESSION");
+        }
         if (phone == null || phone.isEmpty()) {
             return Map.of("result", "FAILURE");
         }
