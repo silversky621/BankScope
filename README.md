@@ -57,7 +57,7 @@ V2__seed_data.sql     ← 샘플 데이터 시드
 - **이미 데이터가 있는 DB**: Flyway가 `baseline`으로 인식하여 마이그레이션을 재실행하지 않으므로 기존 데이터가 보존된다.
 - 적용 이력은 `bank.flyway_schema_history` 테이블에서 추적된다.
 
-> 자동화 없이 수동으로 구성하려면 `AI_Server/schema.sql`(테이블) → `AI_Server/bank_dump.sql`(데이터) 순서로 실행해도 된다.
+> 자동화 없이 수동으로 구성하려면 `bank-backend/src/main/resources/db/migration`의 `V1__init_schema.sql`(테이블) → `V2__seed_data.sql`(데이터)를 순서대로 직접 실행해도 된다.
 
 ### 2. Backend (`bank-backend`)
 
@@ -141,7 +141,7 @@ npm run dev
 |---|---|---|
 | 고객 (개인) | `test01@test.com` ~ `test15@test.com` | `Test1234!` |
 | 고객 (법인) | `corp01@test.com` ~ `corp06@test.com` | `Test1234!` |
-| 행원 | `banker@naver.com` 외 4명 (`AI_Server/bank_dump.sql` 참고) | `1234` |
+| 행원 | `banker@naver.com` 외 4명 (`db/migration/V2__seed_data.sql`의 member 참고) | `1234` |
 | 관리자 | `admin@admin.com` | `1234` |
 
 > 전체 고객 계정의 상세 정보(이름, 주민번호, 전화번호 등)는 `AI_Server/user.txt`를 참고한다.

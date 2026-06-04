@@ -27,12 +27,7 @@ AI 기반 통합 스마트 뱅킹 플랫폼. 고객 맞춤 금융 상품 추천,
 
 ### 1. DB 설정
 
-MySQL에서 아래 SQL 파일을 **순서대로** 실행한다.
-
-```
-1. AI_Server/schema.sql       ← 테이블 생성
-2. AI_Server/bank_dump.sql    ← 샘플 데이터 복원
-```
+DB 스키마·시드 데이터는 백엔드(`bank-backend`)의 **Flyway 마이그레이션으로 자동 관리**된다. MySQL만 실행 중이면, 백엔드 기동 시 `bank-backend/src/main/resources/db/migration`의 `V1__init_schema.sql`(스키마)·`V2__seed_data.sql`(시드)가 순서대로 자동 적용된다. (별도 SQL 수동 실행 불필요)
 
 ### 2. Backend (`bank-backend`)
 
@@ -116,7 +111,7 @@ npm run dev
 |---|---|---|
 | 고객 (개인) | `test01@test.com` ~ `test15@test.com` | `Test1234!` |
 | 고객 (법인) | `corp01@test.com` ~ `corp06@test.com` | `Test1234!` |
-| 행원 | `banker@naver.com` 외 4명 (`AI_Server/bank_dump.sql` 참고) | `1234` |
+| 행원 | `banker@naver.com` 외 4명 (`bank-backend/.../db/migration/V2__seed_data.sql` 참고) | `1234` |
 | 관리자 | `admin@admin.com` | `1234` |
 
 > 전체 고객 계정의 상세 정보(이름, 주민번호, 전화번호 등)는 `AI_Server/user.txt`를 참고한다.
