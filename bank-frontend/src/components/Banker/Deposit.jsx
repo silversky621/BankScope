@@ -77,11 +77,12 @@ const Deposit = ({ onCancel, taskId, selectedTask, onSuccess }) => {
         }).toString();
 
         try {
-            const response = await fetch(`/api/transaction/deposit?${queryParams}`, {
+            const response = await fetch('/api/transaction/deposit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify(Object.fromEntries(new URLSearchParams(queryParams)))
             });
 
             if (response.ok) {

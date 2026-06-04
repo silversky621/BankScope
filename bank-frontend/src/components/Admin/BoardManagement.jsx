@@ -215,7 +215,7 @@ const BoardManagement = ({ type, title }) => {
                 setInputTitle(item.title);
                 setInputContent(item.content || '');
             }
-        } catch (e) {
+        } catch {
             setInputTitle(item.title);
             setInputContent(item.content || '');
         }

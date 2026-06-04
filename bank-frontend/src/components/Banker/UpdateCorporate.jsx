@@ -88,9 +88,9 @@ const UpdateCorporate = ({ selectedTask, onCancel, onComplete }) => {
             const response = await fetch('/api/user/update-corporate', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded', // form-data 형식 지정
+                    'Content-Type': 'application/json',
                 },
-                body: formData.toString()
+                body: JSON.stringify(Object.fromEntries(formData))
             });
 
             if (response.ok) {

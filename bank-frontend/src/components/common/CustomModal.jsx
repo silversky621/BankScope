@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './CustomModal.module.css';

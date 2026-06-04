@@ -148,7 +148,7 @@ const MyPage = () => {
         }
 
         // 유효성 검사 (정규식)
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[`~!@#$%^&*()\-_=+\[{\]}\\|;:'",<.>/?]).{8,50}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,50}$/;
         const nameRegex = /^[가-힣]+$/;
 
         if (!passwordRegex.test(newPassword)) {

@@ -56,10 +56,11 @@ const Transfer = () => {
 
     try {
       // 1. PIN 번호 검증
-      const pinResponse = await fetch(`/api/pin/confirm?pin=${pinInput}`, {
+      const pinResponse = await fetch('/api/pin/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ pin: pinInput }),
       });
       const pinData = await pinResponse.json();
 
@@ -79,9 +80,9 @@ const Transfer = () => {
         const transferResponse = await fetch('/api/transaction/transfer', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             },
-            body: params.toString()
+            body: JSON.stringify(Object.fromEntries(params))
         });
 
         const transferResult = await transferResponse.json();

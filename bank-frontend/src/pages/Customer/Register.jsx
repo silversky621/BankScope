@@ -225,7 +225,7 @@ const Register = () => {
             showAlert('모든 필드를 채우고 이메일 인증을 완료해야 합니다.');
             return;
         }
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[`~!@#$%^&*()\-_=+\[{\]}\\|;:'",<.>/?]).{8,50}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,50}$/;
         if (!passwordRegex.test(formData.password)) {
             showAlert('비밀번호는 영문 대·소문자, 숫자, 특수문자를 모두 포함하여 8자 이상이어야 합니다.');
             return;

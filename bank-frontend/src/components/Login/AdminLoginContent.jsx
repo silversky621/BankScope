@@ -32,15 +32,16 @@ const AdminLoginContent = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const queryParams = new URLSearchParams({
+            const loginPayload = JSON.stringify({
                 email: formData.email,
                 password: formData.password
-            }).toString();
+            });
 
             // 1. 먼저 관리자(Admin) 로그인 시도
-            let response = await fetch(`/api/user/login-admin?${queryParams}`, {
+            let response = await fetch('/api/user/login-admin', {
                 method: 'POST',
-                headers: {}
+                headers: { 'Content-Type': 'application/json' },
+                body: loginPayload
             });
 
             if (response.ok) {
@@ -55,9 +56,10 @@ const AdminLoginContent = () => {
             }
 
             // 2. 관리자 로그인이 실패하면 멤버(Member) 로그인 시도
-            response = await fetch(`/api/user/member/login?${queryParams}`, {
+            response = await fetch('/api/user/member/login', {
                 method: 'POST',
-                headers: {}
+                headers: { 'Content-Type': 'application/json' },
+                body: loginPayload
             });
 
             if (response.ok) {

@@ -83,9 +83,10 @@ const Transfer = ({ onCancel, taskId, selectedTask, onSuccess }) => {
         }).toString();
 
         try {
-            const response = await fetch(`/api/transaction/transfer?${queryParams}`, {
+            const response = await fetch('/api/transaction/transfer', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(new URLSearchParams(queryParams)))
             });
 
             if (response.ok) {

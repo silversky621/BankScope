@@ -32,12 +32,10 @@ const KioskLogin = ({ formData, setFormData, onNext, onPrev }) => {
                 setIsSubmitting(true); // 로딩 시작
 
                 // 쿼리 파라미터로 residentNumber 전송
-                const queryParams = new URLSearchParams({
-                    residentNumber: formData.ssn
-                }).toString();
-
-                const response = await fetch(`/api/user/kiosk/login?${queryParams}`, {
-                    method: 'POST'
+                const response = await fetch('/api/user/kiosk/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ residentNumber: formData.ssn })
                 });
 
                 if (response.ok) {

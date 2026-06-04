@@ -82,13 +82,10 @@ const KioskNonMember = ({ setFormData, onNext, onPrev }) => {
                 // 성공이거나, 이미 가입된 회원이면 로그인을 시도함
                 if (registerData.result === 'SUCCESS' || registerData.result === 'FAILURE_EXISTING_RESIDENT_NUMBER' || registerData.result === 'FAILURE') {
                     // 2. 키오스크 로그인 API 호출하여 세션 생성
-                    const queryParams = new URLSearchParams({
-                        residentNumber: fullSsn
-                    }).toString();
-
-                    const loginResponse = await fetch(`/api/user/kiosk/login?${queryParams}`, {
+                    const loginResponse = await fetch('/api/user/kiosk/login', {
                         method: 'POST',
-                        headers: {}
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ residentNumber: fullSsn })
                     });
 
                     if (loginResponse.ok) {

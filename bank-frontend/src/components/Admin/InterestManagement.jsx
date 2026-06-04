@@ -76,7 +76,7 @@ export default function InterestManagement() {
 
   return (
     <div className={styles.layout}>
-      {/*{isLoading && <Loading message="데이터를 처리 중입니다..." />}*/}
+      {isLoading && <Loading message="데이터를 처리 중입니다..." />}
 
       <div className={styles.header}>
         <h2 className={styles.pageTitle}>금리 관리</h2>

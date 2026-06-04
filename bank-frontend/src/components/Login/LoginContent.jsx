@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styles from './LoginContent.module.css';
@@ -48,15 +49,15 @@ const LoginContent = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const queryParams = new URLSearchParams({
-                email: formData.email,
-                password: formData.password
-            }).toString();
-
-            const response = await fetch(`/api/user/login?${queryParams}`, {
+            const response = await fetch('/api/user/login', {
                 method: 'POST',
                 headers: {
-                }
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password
+                })
             });
 
             if (response.ok) {

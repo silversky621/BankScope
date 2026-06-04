@@ -117,9 +117,10 @@ const BankerWorkSpace = () => {
         }
 
         try {
-            const response = await fetch(`/api/member/password?password=${newPassword}`, {
+            const response = await fetch('/api/member/password', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: newPassword }),
             });
 
             if (response.ok) {
