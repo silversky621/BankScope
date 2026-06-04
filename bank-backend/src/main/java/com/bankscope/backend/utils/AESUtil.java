@@ -30,12 +30,13 @@ public class AESUtil {
 
     @Value("${app.aes.secret-key}")
     public void setAesKey(String key) {
-        AESUtil.AES_KEY = key;
+        // 설정값에 들어간 앞뒤 공백/개행으로 키가 달라지는 사고를 방지하기 위해 trim 한다.
+        AESUtil.AES_KEY = key == null ? null : key.trim();
     }
 
     @Value("${app.hmac.secret-key}")
     public void setHmacKey(String key) {
-        AESUtil.HMAC_KEY = key;
+        AESUtil.HMAC_KEY = key == null ? null : key.trim();
     }
 
     /** AES-GCM 암호화. 출력 = Base64(IV || ciphertext || tag). */
