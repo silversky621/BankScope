@@ -148,16 +148,19 @@ public class LoanService {
     }
 
     // 대출 상세 조회
-    public Pair<LoanResult, LoanEntity> getLoanDetail(Integer loanId/*, UserEntity user*/) {
-        /*if (user == null) return Pair.of(LoanResult.FAILURE_SESSION, null);*/
+    public Pair<LoanResult, LoanEntity> getLoanDetail(Integer loanId, UserEntity user, boolean staffAccess) {
+        if (!staffAccess && user == null) return Pair.of(LoanResult.FAILURE_SESSION, null);
         LoanEntity loan = loanMapper.selectLoanById(loanId);
-        /*if (loan == null) return Pair.of(LoanResult.FAILURE_LOAN_NOT_FOUND, null);
-        if (!loan.getUserId().equals(user.getId()) && !"admin".equals(user.getUserType())) return Pair.of(LoanResult.FAILURE_UNAUTHORIZED, null);*/
+        if (loan == null) return Pair.of(LoanResult.FAILURE_LOAN_NOT_FOUND, null);
+        if (!staffAccess && !loan.getUserId().equals(user.getId())) return Pair.of(LoanResult.FAILURE_UNAUTHORIZED, null);
         return Pair.of(LoanResult.SUCCESS, loan);
     }
-    public Pair<LoanResult, LoanVo> getLoanVoDetail(Integer loanId) {
+    public Pair<LoanResult, LoanVo> getLoanVoDetail(Integer loanId, UserEntity user, boolean staffAccess) {
+        if (!staffAccess && user == null) return Pair.of(LoanResult.FAILURE_SESSION, null);
 
         LoanVo loan = loanMapper.selectLoanVoById(loanId);
+        if (loan == null) return Pair.of(LoanResult.FAILURE_LOAN_NOT_FOUND, null);
+        if (!staffAccess && !loan.getUserId().equals(user.getId())) return Pair.of(LoanResult.FAILURE_UNAUTHORIZED, null);
         return Pair.of(LoanResult.SUCCESS, loan);
     }
 
@@ -267,8 +270,13 @@ public class LoanService {
         return totalAppliedAmount; // 딱 떨어지게 갚은 돈만 반환
     }
 
-    public List<LoanScheduleEntity> getLoanSchedules ( Long loanId) {
-       return this.loanScheduleMapper.findPendingSchedulesByLoanId(loanId);
+    public Pair<LoanResult, List<LoanScheduleEntity>> getLoanSchedules(Long loanId, UserEntity user, boolean staffAccess) {
+        if (loanId == null) return Pair.of(LoanResult.FAILURE_LOAN_NOT_FOUND, null);
+        if (!staffAccess && user == null) return Pair.of(LoanResult.FAILURE_SESSION, null);
+        LoanEntity loan = loanMapper.selectLoanById(loanId.intValue());
+        if (loan == null) return Pair.of(LoanResult.FAILURE_LOAN_NOT_FOUND, null);
+        if (!staffAccess && !loan.getUserId().equals(user.getId())) return Pair.of(LoanResult.FAILURE_UNAUTHORIZED, null);
+        return Pair.of(LoanResult.SUCCESS, this.loanScheduleMapper.findPendingSchedulesByLoanId(loanId));
     }
 
     /**

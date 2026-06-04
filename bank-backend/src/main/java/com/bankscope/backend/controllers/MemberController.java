@@ -79,10 +79,16 @@ public class MemberController {
     @Operation(summary = "멤버 셀프 비밀번호 변경 api", description = "멤버가 비밀번호를 직접 바꿉니다.")
     @RequestMapping(value = "/password", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> PatchPassword( HttpSession session , String password) {
+    public Map<String, Object> PatchPassword(HttpSession session,
+                                             @RequestBody(required = false) Map<String, Object> body,
+                                             @RequestParam(value = "password", required = false) String password) {
         Map<String, Object> response = new HashMap<>();
         if ( session.getAttribute("member") == null) {
             response.put("result", CommonResult.FAILURE.name());
+            return response;
+        }
+        if (body != null && body.get("password") != null) {
+            password = String.valueOf(body.get("password"));
         }
         MemberEntity member = (MemberEntity) session.getAttribute("member");
         CommonResult result = this.memberService.patchMemberPassword(member, password);

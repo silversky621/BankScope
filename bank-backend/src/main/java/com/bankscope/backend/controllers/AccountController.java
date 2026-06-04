@@ -8,6 +8,7 @@ import com.bankscope.backend.entities.UserEntity;
 import com.bankscope.backend.results.AccountResult;
 import com.bankscope.backend.services.AccountService;
 import com.bankscope.backend.services.SavingsService;
+import com.bankscope.backend.utils.SessionAuth;
 import com.bankscope.backend.vos.AccountVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -60,13 +61,28 @@ public class AccountController {
     @Operation(summary = "통장비밀번호 일치조회", description = "손님의 통장비밀번호의 일치여부를 조회합니다.")
     @RequestMapping(value = "/account-password", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postAccountPassword(HttpSession session, @RequestParam(value = "accountId") Long accountId, @RequestParam(value = "accountPassword") String accountPassword) {
+    public Map<String, Object> postAccountPassword(HttpSession session,
+                                                   @RequestBody(required = false) Map<String, Object> body,
+                                                   @RequestParam(value = "accountId", required = false) Long accountId,
+                                                   @RequestParam(value = "accountPassword", required = false) String accountPassword) {
         Map<String, Object> response = new HashMap<>();
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        if (user == null) {
+        accountId = longValue(body, "accountId", accountId);
+        accountPassword = stringValue(body, "accountPassword", accountPassword);
+
+        AccountVo account = accountId == null ? null : this.accountService.getAccountById(accountId);
+        if (account == null) {
             response.put("result", AccountResult.FAILURE.name());
             return response;
         }
+
+        UserEntity user = (UserEntity) session.getAttribute("user");
+        boolean authorized = SessionAuth.isMemberOrAdmin(session)
+                || (SessionAuth.isWebUser(session) && user != null && account.getUserId().equals(user.getId()));
+        if (!authorized) {
+            response.put("result", user == null && !SessionAuth.isMember(session) ? "FAILURE_SESSION" : "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+
         AccountResult result = this.accountService.checkAccountPassword(accountId, accountPassword);
         response.put("result", result.name());
         return response;
@@ -127,8 +143,12 @@ public class AccountController {
     @Operation(summary = "특정 유저의 계좌 목록 조회 (행원용)", description = "유저 ID를 통해 해당 유저의 모든 계좌 목록을 조회합니다.")
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> getUserAccounts(@PathVariable("userId") Integer userId) {
+    public Map<String, Object> getUserAccounts(@PathVariable("userId") Integer userId, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session) && !SessionAuth.isSameUser(session, userId)) {
+            response.put("result", SessionAuth.user(session) == null && !SessionAuth.isMember(session) ? "FAILURE_SESSION" : "FAILURE_NOT_ALLOWED");
+            return response;
+        }
         
         List<AccountVo> accounts = this.accountService.getMyAccounts(userId);
         response.put("result", AccountResult.SUCCESS.name());
@@ -140,11 +160,15 @@ public class AccountController {
     @Operation(summary = "특정 계좌 잔고 조회", description = "계좌번호로 특정 계좌의 정보 및 잔고를 조회합니다.")
     @RequestMapping(value = "/balance", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> getAccountBalance(@RequestParam(value = "accountNumber") String accountNumber) {
+    public Map<String, Object> getAccountBalance(@RequestParam(value = "accountNumber") String accountNumber, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         
         AccountVo account = this.accountService.getAccountByAccountNumber(accountNumber);
         if (account != null) {
+            if (!SessionAuth.isMemberOrAdmin(session) && !SessionAuth.isSameUser(session, account.getUserId())) {
+                response.put("result", SessionAuth.user(session) == null && !SessionAuth.isMember(session) ? "FAILURE_SESSION" : "FAILURE_NOT_ALLOWED");
+                return response;
+            }
             response.put("result", AccountResult.SUCCESS.name());
             response.put("balance", account.getBalance());
             response.put("accountAlias", account.getAccountAlias());
@@ -249,6 +273,28 @@ public class AccountController {
 
         }
             return response;
+    }
+
+    private static String stringValue(Map<String, Object> body, String key, String fallback) {
+        if (body == null || !body.containsKey(key) || body.get(key) == null) {
+            return fallback;
+        }
+        return String.valueOf(body.get(key));
+    }
+
+    private static Long longValue(Map<String, Object> body, String key, Long fallback) {
+        if (body == null || !body.containsKey(key) || body.get(key) == null) {
+            return fallback;
+        }
+        Object value = body.get(key);
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            return Long.valueOf(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
 

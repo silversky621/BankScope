@@ -184,6 +184,10 @@ public class AccountService {
         return this.accountMapper.selectAccountsByUserId(userId);
     }
 
+    public AccountVo getAccountById(Long accountId) {
+        return this.accountMapper.selectAccountById(accountId);
+    }
+
     public AccountVo getAccountByAccountNumber(String accountNumber) {
         return this.accountMapper.selectAccountByAccountNumber(accountNumber);
     }

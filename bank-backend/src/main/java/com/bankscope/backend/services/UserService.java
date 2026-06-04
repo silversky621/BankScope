@@ -203,7 +203,11 @@ public class UserService {
                 member.getLevel() == null || member.getAuth() == null || member.getTeam() == null ) {
             return CommonResult.FAILURE;
         }
-        member.setPassword(encoder.encode(member.getPassword()));
+        if (member.getPassword() != null && !member.getPassword().isBlank()) {
+            member.setPassword(encoder.encode(member.getPassword()));
+        } else {
+            member.setPassword(null);
+        }
         int result = this.userMapper.insertMember(member);
         if (result > 0) {
             return CommonResult.SUCCESS;
@@ -293,6 +297,9 @@ public class UserService {
     }
 
     public UserEntity loginKiosk(String residentNumber ) {
+        if (residentNumber == null) {
+            return null;
+        }
         // 평문 주민번호를 암호화
         String encryptedResidentNumber = AESUtil.encrypt(residentNumber);
         // 암호화된 문자열로 DB에서 조회

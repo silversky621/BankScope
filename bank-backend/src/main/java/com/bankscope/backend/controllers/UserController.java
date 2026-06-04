@@ -8,108 +8,123 @@ import com.bankscope.backend.results.EmailResult;
 import com.bankscope.backend.results.KioskResult;
 import com.bankscope.backend.services.TaskService;
 import com.bankscope.backend.services.UserService;
+import com.bankscope.backend.utils.SessionAuth;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-@Tag(name = "회원(User)", description = "회원 가입 및 로그인 관련 API")
 @RestController
 @RequestMapping(value = "/api/user")
 @RequiredArgsConstructor
-public class  UserController {
-
+public class UserController {
     private final UserService userService;
     private final TaskService taskService;
     private final StringRedisTemplate redisTemplate;
 
-    @Operation(summary = "회원가입", description = "이름, 이메일, 비밀번호, 주민번호를 받아 회원을 등록합니다. 기업회원의 경우 사업자 번호도 함께 입력해야하고 , 키오스크 가입 회원의 경우 웹사이트 회원으로 전환됩니다.")
-    @RequestMapping(value = "/register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> postUserRegister(@RequestBody UserEntity user) {
-        CommonResult result = this.userService.register(user);
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return response;
+        return Map.of("result", this.userService.register(user).name());
     }
-    @Operation(summary = "비회원(키오스크) 회원가입", description = "주민번호, 이름만을 받아 회원을 등록합니다.")
-    @RequestMapping(value = "/semi-register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @PostMapping(value = "/semi-register", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> postUnregisteredUser(@RequestBody UserEntity user) {
-        Map<String,Object> response = new HashMap<>();
         KioskResult result = this.userService.seminRegister(user);
-
-        response.put("result",result.name());
-        return response;
+        return Map.of("result", result.name());
     }
 
-
-    @Operation(summary = "비회원의 사업자등록", description = "워크스페이스에서 기업고객이 사업자번호를 등록합니다.")
-    @RequestMapping(value = "/update-corporate", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/update-corporate", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String,Object> updateCorporate(@RequestParam(value = "identificationNumber") String identificationNumber,
-                                              @RequestParam(value = "userId") Integer userId) {
+    public Map<String, Object> updateCorporate(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "identificationNumber", required = false) String identificationNumber,
+            @RequestParam(value = "userId", required = false) Integer userId,
+            HttpSession session) {
+
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", "FAILURE_SESSION");
+            return response;
+        }
+
+        identificationNumber = stringValue(body, "identificationNumber", identificationNumber);
+        userId = intValue(body, "userId", userId);
         CommonResult result = this.userService.updateCorporateIdentification(identificationNumber, userId);
         response.put("result", result.name());
         return response;
     }
 
-    @Operation(summary = "멤버 등록", description = "멤버 정보를 받아 등록합니다.")
-    @RequestMapping(value = "/member", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postMemberRegister(@RequestBody MemberEntity member) {
-        CommonResult result = this.userService.registerMember(member);
+    public Map<String, Object> postMemberRegister(@RequestBody MemberEntity member, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return response;
-    }
-    @Operation(summary = "멤버 삭제", description = "멤버를 삭제합니다.")
-    @RequestMapping(value = "/member", method =  RequestMethod.DELETE, produces =  MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, Object> deleteMember(@Param(value = "id") Long id) {
-        CommonResult result = this.userService.deleteUser(id);
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return  response;
-    }
-
-    @Operation(summary = "멤버 수정", description = "멤버 정보를 받아 수정합니다.")
-    @RequestMapping(value = "/member", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, Object> patchMember(@RequestBody MemberEntity member) {
-        CommonResult result = this.userService.modifyMember(member);
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
+        if (!SessionAuth.isAdmin(session)) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+        response.put("result", this.userService.registerMember(member).name());
         return response;
     }
 
-    @Operation(summary = "멤버 목록 조회", description = "모든 멤버 정보를 조회합니다.")
+    @RequestMapping(value = "/member", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> deleteMember(@RequestParam(value = "id") Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isAdmin(session)) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+        response.put("result", this.userService.deleteUser(id).name());
+        return response;
+    }
+
+    @PatchMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> patchMember(@RequestBody MemberEntity member, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isAdmin(session)) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+        response.put("result", this.userService.modifyMember(member).name());
+        return response;
+    }
+
     @GetMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Object getMembers(HttpSession session) {
-        MemberEntity member = (MemberEntity) session.getAttribute("member");
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        if (member == null && (user == null || !"admin".equals(user.getUserType()))) {
-            return Map.of("result", "FAILURE");
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            return Map.of("result", "FAILURE_SESSION");
         }
         return this.userService.getMembers();
     }
 
-    @Operation(summary = "로그인", description = "이메일, 비밀번호를 받아 로그인합니다.")
-    @RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postLogin(@Param(value = "email") String email, @Param(value = "password") String password, HttpSession session) {
+    public Map<String, Object> postLogin(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "password", required = false) String password,
+            HttpSession session) {
 
+        email = stringValue(body, "email", email);
+        password = stringValue(body, "password", password);
         UserEntity user = this.userService.login(email, password);
         Map<String, Object> response = new HashMap<>();
         if (user != null && ("customer".equals(user.getUserType()) || "corporate".equals(user.getUserType()))) {
@@ -117,28 +132,28 @@ public class  UserController {
             session.setAttribute("user", user);
             session.setAttribute("loginType", "web");
             redisTemplate.opsForValue().set(
-                "bankscope:chat:" + session.getId(),
-                String.valueOf(user.getId()),
-                Duration.ofHours(2)
-            );
+                    "bankscope:chat:" + session.getId(),
+                    String.valueOf(user.getId()),
+                    Duration.ofHours(2));
         } else {
             response.put("result", CommonResult.FAILURE.name());
         }
         return response;
     }
 
-    @Operation(summary = "키오스크 로그인", description = "주민번호를 받아 로그인합니다.")
-    @RequestMapping(value = "/kiosk/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/kiosk/login", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postKioskLogin(@Param(value = "residentNumber") String residentNumber) {
+    public Map<String, Object> postKioskLogin(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "residentNumber", required = false) String residentNumber) {
+
+        residentNumber = stringValue(body, "residentNumber", residentNumber);
         UserEntity user = this.userService.loginKiosk(residentNumber);
         Map<String, Object> response = new HashMap<>();
-
-        // 키오스크 로그인은 웹 세션을 생성하지 않는다(세션리스).
-        // 주민번호 인증 통과 시 userId/userName을 직접 반환하고, 이후 접수 요청은 userId를 파라미터로 전달한다.
-        // 이를 통해 키오스크와 웹의 세션이 완전히 독립되어 동시 사용 시에도 서로 간섭하지 않는다.
         if (user != null) {
-            if ("customer".equals(user.getUserType()) || "unregisterCustomer".equals(user.getUserType()) || "corporate".equals(user.getUserType())) {
+            if ("customer".equals(user.getUserType())
+                    || "unregisterCustomer".equals(user.getUserType())
+                    || "corporate".equals(user.getUserType())) {
                 response.put("result", CommonResult.SUCCESS.name());
                 response.put("userId", user.getId());
                 response.put("userName", user.getName());
@@ -148,28 +163,40 @@ public class  UserController {
         } else {
             response.put("result", CommonResult.FAILURE.name());
         }
-
         return response;
     }
-    @Operation(summary = "멤버 로그인", description = "이메일, 비밀번호를 받아 멤버 로그인을 합니다.")
-    @RequestMapping(value = "/member/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @PostMapping(value = "/member/login", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postMemberLogin(@Param(value = "email") String email, @Param(value = "password") String password, HttpSession session) {
+    public Map<String, Object> postMemberLogin(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "password", required = false) String password,
+            HttpSession session) {
+
+        email = stringValue(body, "email", email);
+        password = stringValue(body, "password", password);
         MemberEntity member = this.userService.loginMember(email, password);
         Map<String, Object> response = new HashMap<>();
         if (member != null) {
             response.put("result", CommonResult.SUCCESS.name());
             session.setAttribute("member", member);
-        } else  {
+        } else {
             response.put("result", CommonResult.FAILURE.name());
         }
         return response;
     }
 
-    @Operation(summary = "관리자 로그인", description = "이메일, 비밀번호를 받아 관리자 로그인을 합니다.")
-    @RequestMapping(value = "/login-admin", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/login-admin", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> postAdminLogin(@Param(value = "email") String email, @Param(value = "password") String password, HttpSession session) {
+    public Map<String, Object> postAdminLogin(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "password", required = false) String password,
+            HttpSession session) {
+
+        email = stringValue(body, "email", email);
+        password = stringValue(body, "password", password);
         UserEntity user = this.userService.loginAdmin(email, password);
         Map<String, Object> response = new HashMap<>();
         if (user != null && "admin".equals(user.getUserType())) {
@@ -181,15 +208,12 @@ public class  UserController {
         return response;
     }
 
-
-    @Operation(summary = "세션 확인", description = "현재 로그인된 사용자의 정보를 반환합니다.")
     @RequestMapping(value = "/session", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> getSession(HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-
-        UserEntity user = (UserEntity) session.getAttribute("user");
-        MemberEntity member = (MemberEntity) session.getAttribute("member");
+        UserEntity user = SessionAuth.user(session);
+        MemberEntity member = SessionAuth.member(session);
 
         if (user != null) {
             response.put("result", "SUCCESS");
@@ -207,27 +231,24 @@ public class  UserController {
             response.put("level", member.getLevel());
             response.put("auth", member.getAuth());
             response.put("team", member.getTeam());
-
         } else {
             response.put("result", "FAILURE");
         }
         return response;
     }
-    @Operation(summary = "유저정보조회", description = "유저의 id정보를 통해 유저정보를 조회합니다.")
+
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> getUserInfo(HttpSession session, @RequestParam(value = "userId") String userId) {
-        MemberEntity member = (MemberEntity) session.getAttribute("member");
         Map<String, Object> response = new HashMap<>();
-        if (member == null) {
-            response.put("result", "FAILURE");
+        if (!SessionAuth.isMemberOrAdmin(session)) {
+            response.put("result", "FAILURE_SESSION");
             return response;
         }
 
         Pair<CommonResult, UserEntity> result = this.userService.getUserInfo(Integer.valueOf(userId));
         if (result.getLeft() == CommonResult.SUCCESS) {
             UserEntity userInfo = result.getRight();
-            // 주민등록번호는 평문 전체를 노출하지 않고 마스킹하여 응답한다.
             if (userInfo.getResidentNumber() != null) {
                 userInfo.setResidentNumber(maskResidentNumber(userInfo.getResidentNumber()));
             }
@@ -239,38 +260,23 @@ public class  UserController {
         return response;
     }
 
-    // 주민등록번호를 생년월일 6자리 + 성별자리만 노출하고 뒤 6자리를 가린다. (예: 900101-1******)
-    private String maskResidentNumber(String residentNumber) {
-        String digits = residentNumber.replace("-", "");
-        if (digits.length() != 13) {
-            // 형식이 예상과 다르면 전체를 가린다.
-            return "*".repeat(residentNumber.length());
-        }
-        return digits.substring(0, 6) + "-" + digits.charAt(6) + "******";
-    }
-
-    @Operation(summary = "로그아웃", description = "세션을 만료시킵니다.")
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> postLogout(HttpSession session) {
-        MemberEntity member = (MemberEntity) session.getAttribute("member");
+        MemberEntity member = SessionAuth.member(session);
         if (member != null) {
             this.taskService.reassignTasksOnMemberLogout(member.getId());
             this.userService.setMemberStatus(member.getEmail(), 0);
         }
         redisTemplate.delete("bankscope:chat:" + session.getId());
         session.invalidate();
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", "SUCCESS");
-        return response;
+        return Map.of("result", "SUCCESS");
     }
 
-    // 비밀번호 변경
-    @Operation(summary = "비밀번호 변경", description = "유저의 비밀번호를 변경합니다. oldPassword, newPassword(필수), name(선택) 을 json형태로 서버에 전송" )
     @RequestMapping(value = "/password", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> patchPassword(@RequestBody Map<String, String> requestBody, HttpSession session) {
-        UserEntity user = (UserEntity) session.getAttribute("user");
+        UserEntity user = SessionAuth.user(session);
         if (user == null) {
             return Map.of("result", CommonResult.FAILURE_SESSION.name());
         }
@@ -281,40 +287,56 @@ public class  UserController {
         String oldPassword = requestBody.get("oldPassword");
         String newPassword = requestBody.get("newPassword");
         String name = requestBody.get("name");
-
         if (oldPassword == null || newPassword == null) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("result", CommonResult.FAILURE.name());
-            return response;
+            return Map.of("result", CommonResult.FAILURE.name());
         }
 
-        CommonResult result = this.userService.changePassword(user, oldPassword, newPassword, name);
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return response;
+        return Map.of("result", this.userService.changePassword(user, oldPassword, newPassword, name).name());
     }
 
-
-    // 이메일 인증 api
-    @Operation(summary = "이메일 보내기", description = "이메일 인증코드를 보냅니다. type이 register이면 중복 확인을 하고, password이면 중복 확인을 하지 않습니다.")
-    @RequestMapping(value = "/email-send", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/email-send", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> postEmailSend(
             @RequestParam("email") String email,
             @RequestParam(value = "type", defaultValue = "register") String type) {
         EmailResult result = this.userService.sendVerificationEmail(email, type);
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return response;
+        return Map.of("result", result.name());
     }
 
-    @Operation(summary = "이메일 인증 코드 검증", description = "이메일과 코드를 받아 유효성을 검증합니다.")
-    @RequestMapping(value = "/email-code-verify", method = RequestMethod.PATCH ,produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/email-code-verify", method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> patchEmailCodeVerify(@RequestBody EmailTokenEntity emailToken) {
         EmailResult result = this.userService.verifyEmailCode(emailToken.getEmail(), emailToken.getCode());
-        Map<String, Object> response = new HashMap<>();
-        response.put("result", result.name());
-        return response;
+        return Map.of("result", result.name());
+    }
+
+    private static String maskResidentNumber(String residentNumber) {
+        String digits = residentNumber.replace("-", "");
+        if (digits.length() != 13) {
+            return "*".repeat(residentNumber.length());
+        }
+        return digits.substring(0, 6) + "-" + digits.charAt(6) + "******";
+    }
+
+    private static String stringValue(Map<String, Object> body, String key, String fallback) {
+        if (body == null || !body.containsKey(key) || body.get(key) == null) {
+            return fallback;
+        }
+        return String.valueOf(body.get(key));
+    }
+
+    private static Integer intValue(Map<String, Object> body, String key, Integer fallback) {
+        if (body == null || !body.containsKey(key) || body.get(key) == null) {
+            return fallback;
+        }
+        Object value = body.get(key);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return Integer.valueOf(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 }

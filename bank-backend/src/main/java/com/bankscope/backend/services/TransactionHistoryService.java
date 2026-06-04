@@ -20,6 +20,14 @@ public class TransactionHistoryService {
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final AccountMapper accountMapper;
 
+    public boolean isAccountOwnedBy(String accountNumber, Integer userId) {
+        if (accountNumber == null || userId == null) {
+            return false;
+        }
+        AccountEntity account = accountMapper.selectAccountByAccountNumber(accountNumber);
+        return account != null && userId.equals(account.getUserId());
+    }
+
     @Transactional
     public Pair<TransactionResult,TransactionHistoryEntity> deposit(String accountNumber, Long amount, String description, Long taskId) {
         if (amount == null || amount <= 0) {
@@ -69,7 +77,7 @@ public class TransactionHistoryService {
             return Pair.of(TransactionResult.FAILURE_INVALID_ACCOUNT, null);
         }
 
-        if (!BCrypt.checkpw(accountPassword, account.getAccountPassword())) {
+        if (accountPassword == null || !BCrypt.checkpw(accountPassword, account.getAccountPassword())) {
             return Pair.of(TransactionResult.FAILURE_INVALID_PASSWORD, null);
         }
 
@@ -119,7 +127,7 @@ public class TransactionHistoryService {
             return Pair.of(TransactionResult.FAILURE_INVALID_ACCOUNT, null);
         }
 
-        if (!BCrypt.checkpw(accountPassword, fromAccount.getAccountPassword())) {
+        if (accountPassword == null || !BCrypt.checkpw(accountPassword, fromAccount.getAccountPassword())) {
             return Pair.of(TransactionResult.FAILURE_INVALID_PASSWORD, null);
         }
 

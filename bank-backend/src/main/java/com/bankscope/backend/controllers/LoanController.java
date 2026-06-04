@@ -10,6 +10,7 @@ import com.bankscope.backend.results.CommonResult;
 import com.bankscope.backend.results.LoanResult;
 import com.bankscope.backend.services.LoanService;
 import com.bankscope.backend.services.UserService;
+import com.bankscope.backend.utils.SessionAuth;
 import com.bankscope.backend.vos.LoanVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,8 +49,14 @@ public class LoanController {
 
     @Operation(summary = "특정유저의 대출 목록 조회", description = "로그인한 고객의 전체 대출 목록을 조회합니다.")
     @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> getUserLoans(@RequestParam("userId") Integer userId) {
+    public Map<String, Object> getUserLoans(@RequestParam("userId") Integer userId, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+        if (!SessionAuth.isMemberOrAdmin(session) && !SessionAuth.isSameUser(session, userId)) {
+            response.put("result", SessionAuth.user(session) == null && !SessionAuth.isMember(session)
+                    ? LoanResult.FAILURE_SESSION.name()
+                    : LoanResult.FAILURE_UNAUTHORIZED.name());
+            return response;
+        }
         Pair<LoanResult, List<LoanVo>> result = loanService.getUserLoans(userId);
         response.put("result", result.getLeft().name());
         if (result.getLeft() == LoanResult.SUCCESS) {
@@ -63,8 +70,8 @@ public class LoanController {
     public Map<String, Object> getLoanDetail(@PathVariable Integer loanId,
                                              HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-        /*UserEntity user = (UserEntity) session.getAttribute("user");*/
-        Pair<LoanResult, LoanEntity> result = loanService.getLoanDetail(loanId/*, user*/);
+        UserEntity user = (UserEntity) session.getAttribute("user");
+        Pair<LoanResult, LoanEntity> result = loanService.getLoanDetail(loanId, user, SessionAuth.isMemberOrAdmin(session));
         response.put("result", result.getLeft().name());
         if (result.getLeft() == LoanResult.SUCCESS) {
             response.put("loan", result.getRight());
@@ -76,7 +83,8 @@ public class LoanController {
     public Map<String, Object> getLoanVoDetail(@PathVariable Integer loanId,
                                              HttpSession session) {
         Map<String, Object> response = new HashMap<>();
-        Pair<LoanResult, LoanVo> result = loanService.getLoanVoDetail(loanId);
+        UserEntity user = (UserEntity) session.getAttribute("user");
+        Pair<LoanResult, LoanVo> result = loanService.getLoanVoDetail(loanId, user, SessionAuth.isMemberOrAdmin(session));
         response.put("result", result.getLeft().name());
         if (result.getLeft() == LoanResult.SUCCESS) {
             response.put("loan", result.getRight());
@@ -253,10 +261,14 @@ public class LoanController {
     @Operation(summary = "대출 상환상태 조회",
             description ="현재 연체횟수가 얼마인지 얼마나 완료되었는지 확인가능합니다.")
     @RequestMapping(value = "/schedules", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String,Object> getLoanSchedules(@RequestParam(value = "loanId") Long loanId) {
+    public Map<String,Object> getLoanSchedules(@RequestParam(value = "loanId") Long loanId, HttpSession session) {
         Map<String,Object> response = new HashMap<>();
-        List<LoanScheduleEntity> schedules = loanService.getLoanSchedules(loanId);
-        response.put("result", schedules);
+        Pair<LoanResult, List<LoanScheduleEntity>> result = loanService.getLoanSchedules(loanId, SessionAuth.user(session), SessionAuth.isMemberOrAdmin(session));
+        if (result.getLeft() == LoanResult.SUCCESS) {
+            response.put("result", result.getRight());
+        } else {
+            response.put("result", result.getLeft().name());
+        }
         return  response;
     }
 }
