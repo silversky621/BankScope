@@ -3,7 +3,10 @@ import styles from './Card.module.css';
 import { useModal } from '../../context/ModalContext';
 
 const Card = ({ onCancel, selectedTask, onSuccess }) => {
-    const [activeTab, setActiveTab] = useState('register');
+    // 카드수령(웹에서 이미 신청한 카드를 수령)이면, 발급 폼 대신 '카드 목록'(신청 카드 정보 + 활성화 버튼)을 기본으로 보여준다.
+    const [activeTab, setActiveTab] = useState(
+        selectedTask?.taskDetailType === '카드수령' ? 'list' : 'register'
+    );
     const { openModal } = useModal();
 
     const showAlert = useCallback((message, onConfirm = null) => {
