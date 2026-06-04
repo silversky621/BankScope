@@ -388,10 +388,12 @@ def auto_insert_task(req: AutoTaskRequest):
             min_level       = get_min_level_by_detail_type(task_detail_type)
             assigned_level  = f"LEVEL_{min_level}"
 
-            # 4. 티켓 번호 생성 (FOR UPDATE 행 잠금 → 동시 요청 간 번호 중복 방지)
+            # 4. 티켓 번호 생성 (오늘치 기준 + FOR UPDATE 행 잠금 → 동시 요청 간 번호 중복 방지)
+            #    Spring 경로(selectLastTicketNumber)와 동일하게 '오늘 날짜 + prefix'로 통일한다.
             cursor.execute(
                 "SELECT ticket_number FROM task "
-                "WHERE ticket_number LIKE %s ORDER BY task_id DESC LIMIT 1 FOR UPDATE",
+                "WHERE ticket_number LIKE %s AND DATE(created_at) = CURDATE() "
+                "ORDER BY ticket_number DESC LIMIT 1 FOR UPDATE",
                 (f"{prefix}-%",)
             )
             last_ticket = cursor.fetchone()

@@ -34,6 +34,7 @@
         WHERE ticket_number LIKE CONCAT(#{prefix}, '%')
         AND DATE(created_at) = CURDATE()
         ORDER BY ticket_number DESC LIMIT 1
+        FOR UPDATE
     </select>
 
     <select id="countWaitingTasks" resultType="int">
