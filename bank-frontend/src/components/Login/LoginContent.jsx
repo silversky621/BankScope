@@ -70,9 +70,7 @@ const LoginContent = () => {
                     } else {
                         localStorage.removeItem('savedEmail');
                     }
-                    showAlert('로그인성공!', () => {
-                        navigate(from, { replace: true });
-                    })
+                    navigate(from, { replace: true }); // 로그인 성공 시 즉시 이동 (모달 확인에 의존하지 않음)
                 } else {
 
                     showAlert('로그인 실패 : 정보를 확인하세요')

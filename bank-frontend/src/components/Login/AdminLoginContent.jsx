@@ -47,10 +47,8 @@ const AdminLoginContent = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.result === 'SUCCESS') {
-                    await login(); 
-                    showAlert('관리자 로그인 성공!', ()=> {
-                        navigate('/AdminMain'); // 관리자 메인 페이지로 이동
-                    } )
+                    await login();
+                    navigate('/adminmain'); // 로그인 성공 시 즉시 관리자 메인으로 이동 (모달 확인에 의존하지 않음)
                     return;
                 }
             }
@@ -66,9 +64,7 @@ const AdminLoginContent = () => {
                 const data = await response.json();
                 if (data.result === 'SUCCESS') {
                     await login();
-                    showAlert('행원 로그인 성공', () => {
-                        navigate('/BankerWorkSpace'); // 행원 업무 공간으로 이동
-                    })
+                    navigate('/bankerworkspace'); // 로그인 성공 시 즉시 워크스페이스로 이동
                     return;
                 }
             }
