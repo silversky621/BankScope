@@ -16,7 +16,8 @@ public class UserEntity implements Serializable {
     private int id;
     private String name;
     private String email;
-    private String residentNumber;
+    private String residentNumber;      // 검색용 블라인드 인덱스(HMAC). 평문이 아님.
+    private String residentNumberEnc;   // 복호화용 AES-GCM 암호문
     private String identificationNumber;
     private Gender gender;
     private String password;

@@ -64,14 +64,16 @@ public class UserService {
             return CommonResult.FAILURE;
         }
 
-        // 주민등록번호로 기존 사용자 정보 조회 (암호화된 값으로 비교)
-        String encryptedResidentNumber = AESUtil.encrypt(user.getResidentNumber());
-        UserEntity dbUser = this.userMapper.selectUserByResidentNumber(encryptedResidentNumber);
+        // 주민등록번호: 검색용 블라인드 인덱스(HMAC) + 저장용 AES-GCM 암호문 생성 (평문 기준으로 먼저 계산)
+        String rrnIndex = AESUtil.blindIndex(user.getResidentNumber());
+        String rrnEnc = AESUtil.encrypt(user.getResidentNumber());
+        UserEntity dbUser = this.userMapper.selectUserByResidentNumber(rrnIndex);
 
         // 비밀번호 해싱
         user.setPassword(encoder.encode(user.getPassword()));
-        // 주민등록번호 암호화 (이미 위에서 암호화했으므로 재사용)
-        user.setResidentNumber(encryptedResidentNumber);
+        // resident_number = 블라인드 인덱스(검색용), resident_number_enc = GCM 암호문(복호화용)
+        user.setResidentNumberEnc(rrnEnc);
+        user.setResidentNumber(rrnIndex);
 
         int result;
         // dbUser가 있고(키오스크나 워크스페이스를 통해 가입된 적이 있음), 정식 회원이 아닌 경우
@@ -138,9 +140,10 @@ public class UserService {
         if( user.getResidentNumber() == null || user.getName() == null) {
             return KioskResult.FAILURE;
         }
-        // 1. 이미 존재하는 주민번호인지 확인 (중복 가입 방지)
-        String encryptedResidentNumber = AESUtil.encrypt(user.getResidentNumber());
-        UserEntity existingUser = this.userMapper.selectUserByResidentNumber(encryptedResidentNumber);
+        // 1. 이미 존재하는 주민번호인지 확인 (블라인드 인덱스로 검색)
+        String rrnIndex = AESUtil.blindIndex(user.getResidentNumber());
+        String rrnEnc = AESUtil.encrypt(user.getResidentNumber());
+        UserEntity existingUser = this.userMapper.selectUserByResidentNumber(rrnIndex);
 
         if (existingUser != null) {
             // 키오스크(비회원)의 경우, 이미 가입된 내역이 있다면
@@ -151,8 +154,9 @@ public class UserService {
         // 2. 평문 주민번호에서 성별, 나이 추출
         setGenderAndAgeFromResidentNumber(user);
 
-        // 3. 주민등록번호 양방향 암호화
-        user.setResidentNumber(encryptedResidentNumber);
+        // 3. resident_number = 블라인드 인덱스(검색용), resident_number_enc = GCM 암호문(복호화용)
+        user.setResidentNumberEnc(rrnEnc);
+        user.setResidentNumber(rrnIndex);
         user.setIsTermsAgreed(1);
         int result = this.userMapper.insertUnregisteredUser(user);
         if(result > 0) {
@@ -307,10 +311,9 @@ public class UserService {
         if (residentNumber == null) {
             return null;
         }
-        // 평문 주민번호를 암호화
-        String encryptedResidentNumber = AESUtil.encrypt(residentNumber);
-        // 암호화된 문자열로 DB에서 조회
-        return this.userMapper.selectUserByResidentNumber(encryptedResidentNumber);
+        // 블라인드 인덱스(HMAC)로 DB에서 조회
+        String rrnIndex = AESUtil.blindIndex(residentNumber);
+        return this.userMapper.selectUserByResidentNumber(rrnIndex);
     }
 
     public UserEntity loginAdmin(String email, String password) {
@@ -429,9 +432,9 @@ public class UserService {
         if( dbUser == null ) {
             return Pair.of(CommonResult.FAILURE, null );
         } else {
-            // 암호화된 주민등록번호를 복호화하여 평문으로 설정
-            if (dbUser.getResidentNumber() != null) {
-                dbUser.setResidentNumber(AESUtil.decrypt(dbUser.getResidentNumber()));
+            // GCM 암호문(resident_number_enc)을 복호화하여 평문 주민번호로 설정 (이후 컨트롤러에서 마스킹)
+            if (dbUser.getResidentNumberEnc() != null) {
+                dbUser.setResidentNumber(AESUtil.decrypt(dbUser.getResidentNumberEnc()));
             }
             return Pair.of(CommonResult.SUCCESS, dbUser);
         }

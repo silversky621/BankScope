@@ -8,13 +8,14 @@
             useGeneratedKeys="true"
             keyColumn="id"
             keyProperty="id">
-        INSERT INTO `bank`.`user` (user_type, name, email, password, resident_number, identification_number,phone, gender, age,is_terms_agreed)
+        INSERT INTO `bank`.`user` (user_type, name, email, password, resident_number, resident_number_enc, identification_number,phone, gender, age,is_terms_agreed)
         VALUES (
                 IFNULL(#{user.userType} , 'customer'),
                 #{user.name},
                 #{user.email},
                 #{user.password},
                 #{user.residentNumber},
+                #{user.residentNumberEnc},
                 #{user.identificationNumber},
                 #{user.phone},
                 #{user.gender},
@@ -40,13 +41,14 @@
                )
     </insert>
     <insert id="insertUnregisteredUser">
-        INSERT INTO `bank`.`user` (user_type, name, email, password, resident_number, phone, gender, age,is_terms_agreed)
+        INSERT INTO `bank`.`user` (user_type, name, email, password, resident_number, resident_number_enc, phone, gender, age,is_terms_agreed)
         VALUES (
                    IFNULL(#{user.userType} , 'unregisterCustomer'),
                    #{user.name},
                    #{user.email},
                    #{user.password},
                    #{user.residentNumber},
+                   #{user.residentNumberEnc},
                    #{user.phone},
                    #{user.gender},
                    #{user.age},
@@ -188,6 +190,7 @@
                `email`           AS `email`,
                `password`        AS `password`,
                `resident_number` AS `residentNumber`,
+               `resident_number_enc` AS `residentNumberEnc`,
                `identification_number` AS `identificationNumber`,
                `name`            AS `name`,
                `user_type`       AS `userType`,

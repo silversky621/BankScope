@@ -28,8 +28,10 @@ spring.session.store-type=redis
 spring.session.redis.flush-mode=on_save
 spring.session.timeout=2h
 
-# 주민번호 AES 암호화 키 (정확히 16자). 운영/배포 환경마다 안전하게 설정할 것.
+# 주민번호 보호 키. AES-GCM 키(정확히 16/24/32자) + 블라인드 인덱스용 HMAC 키.
+# V4 마이그레이션이 이 키로 데이터를 재암호화하므로, 모든 환경(로컬/서버)이 반드시 같은 값을 사용해야 한다.
 app.aes.secret-key=YOUR_16_CHAR_AES_KEY
+app.hmac.secret-key=YOUR_HMAC_KEY
 
 # Flyway DB 마이그레이션: 앱 기동 시 classpath:db/migration 의 V1(스키마)·V2(시드)를 순서대로 적용·추적
 # 빈 DB면 전체 적용, 이미 데이터가 있는 DB면 baseline 처리하여 재실행하지 않음
