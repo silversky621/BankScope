@@ -250,7 +250,7 @@ def extract_user_features(cursor, user_id: int) -> dict:
                 JOIN loan l ON ls.loan_id = l.loan_id
                 WHERE l.user_id = u.id
                   AND ls.due_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
-                  AND ls.status = 'PENDING'
+                  AND ls.status = 'SCHEDULED'
             ) THEN 1 ELSE 0 END AS has_upcoming_payment,
             CASE WHEN EXISTS (SELECT 1 FROM card c WHERE c.user_id = u.id AND c.status = 'ISSUING')
                 THEN 1 ELSE 0 END AS has_issuing_card,
@@ -285,13 +285,13 @@ def extract_user_features(cursor, user_id: int) -> dict:
             COALESCE((
                 SELECT COUNT(*) FROM transaction_history th
                 JOIN account a ON th.account_id = a.account_id
-                WHERE a.user_id = u.id AND th.transaction_type = 'WITHDRAWAL'
+                WHERE a.user_id = u.id AND th.transaction_type IN ('WITHDRAW', 'WITHDRAWAL')
                   AND th.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
             ), 0) AS recent_withdrawal_count,
             COALESCE((
                 SELECT COUNT(*) FROM transaction_history th
                 JOIN account a ON th.account_id = a.account_id
-                WHERE a.user_id = u.id AND th.transaction_type = 'TRANSFER'
+                WHERE a.user_id = u.id AND th.transaction_type IN ('TRANSFER', 'TRANSFER_OUT', 'TRANSFER_IN')
                   AND th.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
             ), 0) AS recent_transfer_count,
             COALESCE((
@@ -347,7 +347,7 @@ def extract_user_features(cursor, user_id: int) -> dict:
         'recent_transfer_count': int(row['recent_transfer_count']),
         'days_since_last_tx':    int(row['days_since_last_tx']),
         'max_password_fail_count': int(row['max_password_fail_count']),
-        'has_business_id':       1 if (is_corporate == 0 and row['identification_number']) else 0,
+        'has_business_id':       1 if (is_corporate == 1 and row['identification_number']) else 0,
         'savings_near_maturity': int(row['savings_near_maturity']),
         'deposit_near_maturity': int(row['deposit_near_maturity']),
     }
