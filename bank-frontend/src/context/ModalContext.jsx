@@ -59,6 +59,9 @@ export const ModalProvider = ({ children }) => {
             <CustomModal
                 isOpen={modalConfig.isOpen}
                 onClose={closeModal}
+                // 배경 클릭/ESC/× 닫힘 표준: 취소 버튼이 있으면 '취소', 확인만 있는 알림이면 '확인'으로 처리.
+                // (확인만 있는 알림은 닫음=수긍이므로 onConfirm 동작 누락으로 인한 미이동/흰 화면을 방지)
+                onDismiss={(modalConfig.onCancel || modalConfig.cancelText) ? handleCancel : handleConfirm}
                 title={modalConfig.title}
                 // 특별한 onConfirm 함수가 없어도 확인 버튼으로 창을 닫을 수 있도록 항상 handleConfirm 전달
                 onConfirm={handleConfirm}
