@@ -51,13 +51,16 @@ DB 스키마와 시드 데이터는 **Flyway 마이그레이션으로 자동 관
 ```
 V1__init_schema.sql   ← 테이블 생성 (스키마)
 V2__seed_data.sql     ← 샘플 데이터 시드
+V3__seed_board.sql    ← 게시판/공지 샘플 데이터 시드
+V4__migrate_resident_number_to_gcm.java ← 설정된 키로 주민번호 AES-GCM 암호화 및 HMAC 검색 인덱스 구성
 ```
 
-- **빈 DB**: 백엔드를 처음 실행하면 Flyway가 V1·V2를 적용하여 스키마+데이터를 자동 구성한다. (`bank` 스키마가 없으면 자동 생성)
-- **이미 데이터가 있는 DB**: Flyway가 `baseline`으로 인식하여 마이그레이션을 재실행하지 않으므로 기존 데이터가 보존된다.
+- **빈 DB**: 백엔드를 처음 실행하면 Flyway가 V1~V4를 적용하여 스키마+데이터를 자동 구성한다. (`bank` 스키마가 없으면 자동 생성)
+- **이미 데이터가 있는 DB**: Flyway가 `baseline`으로 인식하여 V1·V2를 재실행하지 않으므로 기존 스키마와 시드 데이터가 보존된다. 이후 마이그레이션은 적용 이력에 따라 추적·검증된다.
 - 적용 이력은 `bank.flyway_schema_history` 테이블에서 추적된다.
+- **주의**: V2/V4 마이그레이션 파일을 수정한 뒤에는 기존 DB의 Flyway 체크섬과 맞지 않을 수 있다. 이 경우 기존 제출용 더미 DB를 비우고 V1~V4를 처음부터 다시 적용해야 한다.
 
-> 자동화 없이 수동으로 구성하려면 `bank-backend/src/main/resources/db/migration`의 `V1__init_schema.sql`(테이블) → `V2__seed_data.sql`(데이터)를 순서대로 직접 실행해도 된다.
+> V4는 Java 기반 Flyway 마이그레이션이다. V1~V3 SQL만 수동 실행하면 주민번호 보호 컬럼과 검색 인덱스가 완성되지 않으므로, 최종 DB 구성은 백엔드 기동을 통해 Flyway가 V4까지 적용하게 해야 한다.
 
 ### 2. Backend (`bank-backend`)
 
@@ -72,6 +75,8 @@ cp bank-backend/src/main/resources/application.properties.example \
 - `spring.datasource.password` — MySQL 비밀번호
 - `spring.mail.username` / `spring.mail.password` — Gmail 계정 및 앱 비밀번호 (이메일 인증 기능 사용 시)
 - `solapi.api.key` / `solapi.api.secret` — Solapi API 키 (SMS 기능 사용 시)
+
+`app.aes.secret-key`와 `app.hmac.secret-key`는 주민번호 AES-GCM 암호화와 HMAC 블라인드 인덱스 생성에 사용된다. V4 Java 마이그레이션은 DB 초기 구성 시 현재 설정된 키로 더미 주민번호를 암호화하므로, DB를 처음 만들기 전에는 환경별 키로 바꿔도 된다. 단, V4 적용 후 키를 바꾸면 기존 암호문 복호화가 깨지므로 키 교체는 별도 재암호화 마이그레이션으로 처리해야 한다. 실서비스에서는 해당 키를 깃에 두지 않고 시크릿 매니저 또는 환경 변수로 주입하는 구조가 맞다.
 
 이후 Spring Boot 서버를 실행한다.
 
