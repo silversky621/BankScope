@@ -30,3 +30,11 @@ spring.session.timeout=2h
 
 # 주민번호 AES 암호화 키 (정확히 16자). 운영/배포 환경마다 안전하게 설정할 것.
 app.aes.secret-key=YOUR_16_CHAR_AES_KEY
+
+# Flyway DB 마이그레이션: 앱 기동 시 classpath:db/migration 의 V1(스키마)·V2(시드)를 순서대로 적용·추적
+# 빈 DB면 전체 적용, 이미 데이터가 있는 DB면 baseline 처리하여 재실행하지 않음
+spring.flyway.enabled=true
+spring.flyway.schemas=bank
+spring.flyway.create-schemas=true
+spring.flyway.baseline-on-migrate=true
+spring.flyway.baseline-version=2

@@ -46,12 +46,18 @@ AI 기반 통합 스마트 뱅킹 플랫폼. 고객 맞춤 금융 상품 추천,
 
 ### 1. DB 설정
 
-MySQL에서 아래 SQL 파일을 **순서대로** 실행한다.
+DB 스키마와 시드 데이터는 **Flyway 마이그레이션으로 자동 관리**된다. MySQL이 실행 중이면 별도 SQL을 수동으로 돌릴 필요 없이, 백엔드 기동 시 `bank-backend/src/main/resources/db/migration`의 마이그레이션이 순서대로 자동 적용된다.
 
 ```
-1. AI_Server/schema.sql       ← 테이블 생성
-2. AI_Server/bank_dump.sql    ← 샘플 데이터 복원
+V1__init_schema.sql   ← 테이블 생성 (스키마)
+V2__seed_data.sql     ← 샘플 데이터 시드
 ```
+
+- **빈 DB**: 백엔드를 처음 실행하면 Flyway가 V1·V2를 적용하여 스키마+데이터를 자동 구성한다. (`bank` 스키마가 없으면 자동 생성)
+- **이미 데이터가 있는 DB**: Flyway가 `baseline`으로 인식하여 마이그레이션을 재실행하지 않으므로 기존 데이터가 보존된다.
+- 적용 이력은 `bank.flyway_schema_history` 테이블에서 추적된다.
+
+> 자동화 없이 수동으로 구성하려면 `AI_Server/schema.sql`(테이블) → `AI_Server/bank_dump.sql`(데이터) 순서로 실행해도 된다.
 
 ### 2. Backend (`bank-backend`)
 
