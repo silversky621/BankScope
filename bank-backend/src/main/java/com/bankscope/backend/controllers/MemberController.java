@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -148,17 +147,21 @@ public class MemberController {
     @Operation(summary = "직원 업무 진행상태", description = "현재 근무 중인 직원들의 레벨, 이름, 소요시간, 상태, 오늘 처리 건수를 종합하여 반환합니다.")
     @RequestMapping(value = "/counter-status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Pair<CommonResult, List<CounterStatusVo>> getCounterStatus( HttpSession session ) {
+    public Map<String, Object> getCounterStatus( HttpSession session ) {
+        Map<String, Object> response = new HashMap<>();
         if (!SessionAuth.isMemberOrAdmin(session)) {
-            return Pair.of(CommonResult.FAILURE_SESSION, null);
+            response.put("result", CommonResult.FAILURE_SESSION.name());
+            return response;
         }
         List<CounterStatusVo> statusList = this.memberService.getCounterStatus();
 
         if (statusList != null) {
-            return Pair.of(CommonResult.SUCCESS, statusList);
+            response.put("result", CommonResult.SUCCESS.name());
+            response.put("statusList", statusList);
         } else {
-            return Pair.of(CommonResult.FAILURE, null);
+            response.put("result", CommonResult.FAILURE.name());
         }
+        return response;
     }
 
     @Operation(summary = "대시보드 상단 통계 api", description = "전체 대기인원과 오늘 처리 건수를 한 번에 반환합니다.")

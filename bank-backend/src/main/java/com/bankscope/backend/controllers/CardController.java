@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Tag(name = "카드(Card)", description = "카드 발급 및 관리 API")
@@ -24,6 +25,9 @@ import java.util.Map;
 public class CardController {
 
     private final CardService cardService;
+    private static final String CARD_STATUS_ISSUING = "ISSUING";
+    private static final String CARD_STATUS_ACTIVE = "ACTIVE";
+    private static final String CARD_STATUS_SUSPENDED = "SUSPENDED";
 
     // =================================================================
     // 🌐 [웹사이트/앱] 일반 고객 전용 API
@@ -116,7 +120,7 @@ public class CardController {
             return response;
         }
 
-        // 고객은 제한된 상태 변경만 허용한다: 분실/정지(SUSPENDED), 정지 상태에서의 해제(SUSPENDED→ACTIVE).
+        // 고객은 활성 카드 정지와 정지 카드 해제만 직접 요청할 수 있다.
         // 발급대기(ISSUING) 카드의 활성화는 창구 수령 절차이므로 고객 API로는 차단한다(수령 우회 방지).
         Pair<CommonResult, CardEntity> cardResult = this.cardService.getCardById(cardId, user.getId());
         if (cardResult.getLeft() != CommonResult.SUCCESS) {
@@ -124,14 +128,13 @@ public class CardController {
             return response;
         }
         String current = cardResult.getRight().getStatus();
-        boolean allowed = "SUSPENDED".equals(status)
-                || ("ACTIVE".equals(status) && "SUSPENDED".equals(current));
-        if (!allowed) {
+        String targetStatus = normalizeCardStatus(status);
+        if (!isCustomerStatusTransitionAllowed(current, targetStatus)) {
             response.put("result", "FAILURE_NOT_ALLOWED");
             return response;
         }
 
-        CommonResult result = this.cardService.updateCardStatus(cardId, status, user.getId());
+        CommonResult result = this.cardService.updateCardStatus(cardId, targetStatus, user.getId());
         response.put("result", result.name());
         return response;
     }
@@ -203,7 +206,19 @@ public class CardController {
             return response;
         }
 
-        CommonResult result = this.cardService.updateCardStatus(cardId, status, targetUserId);
+        Pair<CommonResult, CardEntity> cardResult = this.cardService.getCardById(cardId, targetUserId);
+        if (cardResult.getLeft() != CommonResult.SUCCESS) {
+            response.put("result", "FAILURE");
+            return response;
+        }
+
+        String targetStatus = normalizeCardStatus(status);
+        if (!isWorkspaceStatusTransitionAllowed(cardResult.getRight().getStatus(), targetStatus)) {
+            response.put("result", "FAILURE_NOT_ALLOWED");
+            return response;
+        }
+
+        CommonResult result = this.cardService.updateCardStatus(cardId, targetStatus, targetUserId);
         response.put("result", result.name());
         return response;
     }
@@ -224,5 +239,18 @@ public class CardController {
         CommonResult result = this.cardService.deleteCard(cardId, targetUserId);
         response.put("result", result.name());
         return response;
+    }
+
+    private static String normalizeCardStatus(String status) {
+        return status == null ? null : status.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private static boolean isCustomerStatusTransitionAllowed(String currentStatus, String targetStatus) {
+        return (CARD_STATUS_ACTIVE.equals(currentStatus) && CARD_STATUS_SUSPENDED.equals(targetStatus))
+                || (CARD_STATUS_SUSPENDED.equals(currentStatus) && CARD_STATUS_ACTIVE.equals(targetStatus));
+    }
+
+    private static boolean isWorkspaceStatusTransitionAllowed(String currentStatus, String targetStatus) {
+        return CARD_STATUS_ISSUING.equals(currentStatus) && CARD_STATUS_ACTIVE.equals(targetStatus);
     }
 }

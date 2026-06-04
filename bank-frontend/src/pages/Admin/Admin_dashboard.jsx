@@ -116,7 +116,7 @@ export default function Admin_dashboard() {
       const res = await fetch('/api/member/counter-status');
       if (res.ok) {
         const data = await res.json();
-        const rawList = data.SUCCESS || data.right || [];
+        const rawList = data.statusList || data.SUCCESS || data.right || [];
         if (Array.isArray(rawList)) {
           const now = new Date().getTime();
           const mappedTellers = rawList.map(t => {
@@ -124,7 +124,6 @@ export default function Admin_dashboard() {
             if (t.currentTaskStatus === '업무중' && t.taskStartedAt) {
               calculatedElapsed = Math.floor((now - new Date(t.taskStartedAt).getTime()) / 1000);
             }
-            console.log(rawList)
             return {
               id:                   t.memberId,
               name:                 t.memberName,
