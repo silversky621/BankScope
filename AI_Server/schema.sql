@@ -1,4 +1,4 @@
-CREATE SCHEMA `bank`;
+CREATE SCHEMA IF NOT EXISTS `bank`;
 
 create table `bank`.`member`
 (
@@ -65,6 +65,26 @@ create table bank.task
 
 
 
+create table if not exists `bank`.`financial_product`
+(
+    product_id          int unsigned auto_increment primary key,
+    product_category    enum('CHECKING','DEPOSIT', 'SAVINGS', 'LOAN') not null,
+    product_name        varchar(100)                                             not null,
+    base_interest_rate  decimal(5, 2)                                            not null,
+    max_interest_rate   decimal(5, 2)                                            null,
+    min_duration_months int                                                      null,
+    max_duration_months int                                                      null,
+    min_amount          bigint                                                   null,
+    max_amount          bigint                                                   null,
+    description         text                                                     null,
+    is_active           tinyint(1) default 1                                     null,
+    target_type         enum ('INDIVIDUAL', 'CORPORATE', 'ALL')                 null,
+    created_at          datetime   default CURRENT_TIMESTAMP                    null,
+    updated_at          datetime   default CURRENT_TIMESTAMP                    null on update CURRENT_TIMESTAMP,
+    min_age             int                                                      null,
+    max_age             int                                                      null
+);
+
 create table `bank`.`account`
 (
     account_id          bigint auto_increment
@@ -106,27 +126,6 @@ create table `bank`.`board`
     updated_at datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP not null,
     constraint foreign key (user_id) references user (id) on delete cascade
 );
-
--- 금융 상품 관리 (Product)
-create table `bank`.`financial_product`
-(
-    product_id          int unsigned auto_increment primary key,
-    product_category    enum('CHECKING','DEPOSIT', 'SAVINGS', 'LOAN') not null,
-    product_name        varchar(100)                                             not null,
-    base_interest_rate  decimal(5, 2)                                            not null,
-    max_interest_rate   decimal(5, 2)                                            null,
-    min_duration_months int                                                      null,
-    max_duration_months int                                                      null,
-    min_amount          bigint                                                   null,
-    max_amount          bigint                                                   null,
-    description         text                                                     null,
-    is_active           tinyint(1) default 1                                     null,
-    target_type         enum ('INDIVIDUAL', 'CORPORATE', 'ALL')                 null,
-    created_at          datetime   default CURRENT_TIMESTAMP                    null,
-    updated_at          datetime   default CURRENT_TIMESTAMP                    null on update CURRENT_TIMESTAMP,
-    min_age             int                                                      null,
-    max_age             int                                                      null
-    );
 
 
 -- 카드
