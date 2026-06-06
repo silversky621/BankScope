@@ -196,7 +196,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  /* 글로벌 CustomModal(z-index 3000) 바로 아래로 두어, PIN 입력 중 뜨는 알림 모달이 PIN 오버레이 위에 보이도록 함 */
+  z-index: 2999;
 }
 .pinModalContent {
   background: white;
