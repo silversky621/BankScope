@@ -404,10 +404,11 @@ def auto_insert_task(req: AutoTaskRequest):
             # 전체 WAITING 처리 시간 합산 기준으로 가장 한가한 직원 선택
             # 그 최솟값이 곧 이 고객의 예상 대기 시간
             member_id = None
+            counter_number = None
             expected_waiting_time = 0
             cursor.execute(
                 """
-                SELECT m.id, COALESCE(w.total_wait_min, 0) AS expected_waiting_time
+                SELECT m.id, m.counter_number, COALESCE(w.total_wait_min, 0) AS expected_waiting_time
                 FROM member m
                 LEFT JOIN (
                     SELECT member_id,
@@ -429,11 +430,12 @@ def auto_insert_task(req: AutoTaskRequest):
             member_row = cursor.fetchone()
             if not member_row:
                 cursor.execute(
-                    "SELECT id FROM member WHERE status = 1 ORDER BY level DESC LIMIT 1"
+                    "SELECT id, counter_number FROM member WHERE status = 1 ORDER BY level DESC LIMIT 1"
                 )
                 member_row = cursor.fetchone()
             if member_row:
                 member_id = member_row['id']
+                counter_number = member_row.get('counter_number')
                 expected_waiting_time = int(member_row.get('expected_waiting_time', 0))
 
             # 6. ranking 계산 — 배정된 직원의 전체 WAITING 건수 기준
@@ -473,6 +475,7 @@ def auto_insert_task(req: AutoTaskRequest):
                     "expected_waiting_time": expected_waiting_time,
                     "status":                "WAITING",
                     "member_id":             member_id,
+                    "counter_number":        counter_number,
                     "ranking":               ranking,
                     "is_ai":                 True,
                     "created_at":            now.strftime('%Y-%m-%dT%H:%M:%S'),

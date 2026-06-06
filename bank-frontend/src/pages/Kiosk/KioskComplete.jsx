@@ -54,10 +54,9 @@ const KioskComplete = ({ formData, onGoHome, /*onAddMore,*/ userName, isAiMode }
                     
                     switch (data.result) {
                         case 'SUCCESS': {
-                            let task, memberId;
+                            let task;
                             if (isAiMode) {
                                 task = data.taskResult;
-                                memberId = task.member_id;
                             } else {
                                 // 직접 접수 성공 시, /api/kiosk/task 로 다시 조회해서 결과 세팅
                                 const checkResponse = await fetch(`/api/kiosk/task?userId=${formData.userId}`);
@@ -65,7 +64,6 @@ const KioskComplete = ({ formData, onGoHome, /*onAddMore,*/ userName, isAiMode }
                                     const checkData = await checkResponse.json();
                                     if (checkData.result === 'SUCCESS') {
                                         task = checkData.task;
-                                        memberId = task.memberId;
                                     } else {
                                         console.error("Failed to get task info:", checkData);
                                         // 실패 시 기본값으로 설정하거나 오류 처리
@@ -76,21 +74,9 @@ const KioskComplete = ({ formData, onGoHome, /*onAddMore,*/ userName, isAiMode }
                                 }
                             }
 
-                            let counterNumber = null;
-                            if (memberId) {
-                                try {
-                                    const membersRes = await fetch('/api/user/members');
-                                    if (membersRes.ok) {
-                                        const members = await membersRes.json();
-                                        const foundMember = members.find(m => m.id === memberId);
-                                        if (foundMember) {
-                                            counterNumber = foundMember.counterNumber;
-                                        }
-                                    }
-                                } catch (e) {
-                                    console.error("담당자 정보 조회 실패:", e);
-                                }
-                            }
+                            // 창구번호는 접수 응답에 이미 포함됨 (AI: counter_number / 직접접수: counterNumber).
+                            // 세션리스 키오스크가 권한 필요한 API(/api/user/members)를 2차 조회하지 않도록 응답값을 그대로 사용.
+                            const counterNumber = task.counterNumber ?? task.counter_number ?? null;
 
                             setTicketInfo({
                                 ticketNumber: task.ticketNumber || task.ticket_number || '-',
