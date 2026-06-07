@@ -3,10 +3,17 @@
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(33, 33, 33, 0.6);
   display: flex; justify-content: center; align-items: center;
-  z-index: 2000;
-  backdrop-filter: blur(4px);
+  z-index: 3000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.isOpen {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* 모달 컨텐츠 박스 */
@@ -23,7 +30,13 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   border: 1px solid #eee;
   position: relative;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease-in-out;
   overflow: hidden; /* 라인이 모달 둥근 모서리에 맞춰 잘리도록 복구 */
+}
+
+.isOpen .modalContent {
+  transform: translateY(0);
 }
 
 /* 상단 포인트 라인 */
@@ -185,6 +198,17 @@
   transition: border-color 0.2s;
 }
 .select:focus { border-color: #2eb086; }
+
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalContent {
+    transition: none;
+  }
+
+  .modalContent {
+    transform: none;
+  }
+}
 
 /* 상세 설명 박스 */
 .infoBox {

@@ -1,12 +1,41 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import styles from './ProductModal.module.css';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import RecommendDeposit from "./RecommendDeposit.jsx";
 import RecommendSavings from "./RecommendSavings.jsx";
 import RecommendLoan from "./RecommendLoan.jsx";
 import RecommendChecking from "./RecommendChecking.jsx";
 
 const ProductModal = ({ product, isOpen, onClose, selectedTask }) => {
-  if (!isOpen || !product) return null;
+  const [isRendered, setIsRendered] = useState(false);
+  const [isAnimate, setIsAnimate] = useState(false);
+
+  useEffect(() => {
+    let firstFrame;
+    let secondFrame;
+
+    if (isOpen && product) {
+      setIsRendered(true);
+      firstFrame = requestAnimationFrame(() => {
+        secondFrame = requestAnimationFrame(() => setIsAnimate(true));
+      });
+    } else {
+      setIsAnimate(false);
+    }
+
+    return () => {
+      if (firstFrame) cancelAnimationFrame(firstFrame);
+      if (secondFrame) cancelAnimationFrame(secondFrame);
+    };
+  }, [isOpen, product]);
+
+  const handleTransitionEnd = (e) => {
+    if (e.target === e.currentTarget && e.propertyName === 'opacity' && !isAnimate) {
+      setIsRendered(false);
+    }
+  };
+
+  if (!isRendered || !product) return null;
   // 조건부 렌더링을 위한 헬퍼 함수
   const renderRecommendForm = () => {
     switch (product.productCategory) {
@@ -25,7 +54,11 @@ const ProductModal = ({ product, isOpen, onClose, selectedTask }) => {
   };
 
   return (
-      <div className={styles.modalOverlay} onClick={onClose}>
+      <div
+        className={`${styles.modalOverlay} ${isAnimate ? styles.isOpen : ''}`}
+        onClick={onClose}
+        onTransitionEnd={handleTransitionEnd}
+      >
         <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
           <header className={styles.header}>
             <h2>금융상품 가입 안내</h2>

@@ -22,19 +22,29 @@ const CustomModal = ({
     const dismiss = onDismiss || onClose;
 
     useEffect(() => {
+        let firstFrame;
+        let secondFrame;
+        let autoCloseTimer;
+
         if (isOpen) {
             setIsRendered(true);
             // 브라우저 렌더링 사이클을 고려한 짧은 지연
-            const timer = setTimeout(() => setIsAnimate(true), 10);
+            firstFrame = requestAnimationFrame(() => {
+                secondFrame = requestAnimationFrame(() => setIsAnimate(true));
+            });
 
             if (duration > 0) {
-                const autoCloseTimer = setTimeout(onClose, duration);
-                return () => clearTimeout(autoCloseTimer);
+                autoCloseTimer = setTimeout(onClose, duration);
             }
-            return () => clearTimeout(timer);
         } else {
             setIsAnimate(false);
         }
+
+        return () => {
+            if (firstFrame) cancelAnimationFrame(firstFrame);
+            if (secondFrame) cancelAnimationFrame(secondFrame);
+            if (autoCloseTimer) clearTimeout(autoCloseTimer);
+        };
     }, [isOpen, duration, onClose]);
 
     useEffect(() => {
@@ -47,7 +57,7 @@ const CustomModal = ({
 
     const handleTransitionEnd = (e) => {
         // opacity 트랜지션이 끝나고, 닫히는 중(isAnimate가 false)일 때만 DOM 제거
-        if (e.propertyName === 'opacity' && !isAnimate) {
+        if (e.target === e.currentTarget && e.propertyName === 'opacity' && !isAnimate) {
             setIsRendered(false);
         }
     };
