@@ -62,6 +62,105 @@ TASK_FEATURE_COLUMNS = [
     'savings_near_maturity', 'deposit_near_maturity',
 ]
 
+FEATURE_DISPLAY_META = {
+    'age': {
+        'label': '연령',
+        'message': '연령 정보가 업무 유형 예측에 반영됐습니다.',
+    },
+    'is_corporate': {
+        'label': '고객 유형',
+        'message': '개인/법인 고객 구분이 업무 유형 예측에 반영됐습니다.',
+    },
+    'gender': {
+        'label': '성별',
+        'message': '성별 정보가 업무 유형 예측에 반영됐습니다.',
+    },
+    'total_balance': {
+        'label': '총 예치 잔액',
+        'message': '총 예치 잔액 규모가 AI 업무 예측에 크게 반영됐습니다.',
+    },
+    'account_count': {
+        'label': '보유 계좌 수',
+        'message': '보유 계좌 수가 고객의 업무 패턴 판단에 반영됐습니다.',
+    },
+    'has_active_loan': {
+        'label': '활성 대출 보유',
+        'message': '활성 대출 보유 여부가 대출 또는 상환 상담 판단에 반영됐습니다.',
+    },
+    'has_overdue_loan': {
+        'label': '연체 대출 여부',
+        'message': '연체 대출 여부가 연체 관리 상담 필요성 판단에 반영됐습니다.',
+    },
+    'has_upcoming_payment': {
+        'label': '7일 내 상환 예정',
+        'message': '가까운 상환 일정 여부가 대출 상환 상담 판단에 반영됐습니다.',
+    },
+    'has_issuing_card': {
+        'label': '발급 대기 카드',
+        'message': '발급 대기 카드 여부가 카드 수령 또는 발급 상담 판단에 반영됐습니다.',
+    },
+    'has_check_card': {
+        'label': '체크카드 보유',
+        'message': '체크카드 보유 여부가 카드·계좌 연계 상담 판단에 반영됐습니다.',
+    },
+    'has_credit_card': {
+        'label': '신용카드 보유',
+        'message': '신용카드 보유 여부가 카드 상담 판단에 반영됐습니다.',
+    },
+    'has_deposit_sub': {
+        'label': '예금 상품 보유',
+        'message': '예금 상품 보유 여부가 예금 상담 판단에 반영됐습니다.',
+    },
+    'has_savings_sub': {
+        'label': '적금 상품 보유',
+        'message': '적금 상품 보유 여부가 적금 상담 판단에 반영됐습니다.',
+    },
+    'default_risk_level': {
+        'label': '법인 리스크 등급',
+        'message': '법인 리스크 등급이 기업 상담 또는 관리 업무 판단에 반영됐습니다.',
+    },
+    'recent_deposit_count': {
+        'label': '최근 입금 횟수',
+        'message': '최근 입금 거래 빈도가 고객 업무 예측에 반영됐습니다.',
+    },
+    'recent_withdrawal_count': {
+        'label': '최근 출금 횟수',
+        'message': '최근 출금 거래 빈도가 고객 업무 예측에 반영됐습니다.',
+    },
+    'recent_transfer_count': {
+        'label': '최근 이체 횟수',
+        'message': '최근 이체 거래 빈도가 고객 업무 예측에 반영됐습니다.',
+    },
+    'days_since_last_tx': {
+        'label': '최근 거래 경과일',
+        'message': '최근 거래 시점이 고객 업무 예측에 반영됐습니다.',
+    },
+    'max_password_fail_count': {
+        'label': '비밀번호 오류 횟수',
+        'message': '계좌 비밀번호 오류 이력이 보안성 업무 판단에 반영됐습니다.',
+    },
+    'has_business_id': {
+        'label': '사업자번호 등록',
+        'message': '사업자번호 등록 여부가 법인 고객 업무 판단에 반영됐습니다.',
+    },
+    'savings_near_maturity': {
+        'label': '만기 임박 적금',
+        'message': '만기 임박 적금 여부가 재예치 또는 상품 상담 판단에 반영됐습니다.',
+    },
+    'deposit_near_maturity': {
+        'label': '만기 임박 예금',
+        'message': '만기 임박 예금 여부가 재예치 또는 상품 상담 판단에 반영됐습니다.',
+    },
+}
+
+missing_feature_meta = set(TASK_FEATURE_COLUMNS) - set(FEATURE_DISPLAY_META)
+extra_feature_meta = set(FEATURE_DISPLAY_META) - set(TASK_FEATURE_COLUMNS)
+if missing_feature_meta or extra_feature_meta:
+    raise RuntimeError(
+        f"FEATURE_DISPLAY_META mismatch. missing={sorted(missing_feature_meta)}, "
+        f"extra={sorted(extra_feature_meta)}"
+    )
+
 DETAIL_TYPE_META = {
     # 빠른 업무 (A)
     '입금':             {'task_type': '빠른 업무', 'prefix': 'A', 'processing_time': 5},
@@ -605,35 +704,134 @@ def get_user_recommendation(user_id: int):
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 
-@app.get("/py/explain/{user_id}")
-def explain_prediction(user_id: int):
-    """특정 고객의 AI 예측 근거를 SHAP waterfall 이미지로 반환."""
+def get_prediction_explanation_context(user_id: int) -> dict:
     if not model:
         raise HTTPException(status_code=500, detail="AI Model not loaded.")
 
+    with get_db_cursor() as (conn, cursor):
+        try:
+            features = extract_user_features(cursor, user_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+
+    input_df = pd.DataFrame([features])[TASK_FEATURE_COLUMNS]
+    predicted = str(model.predict(input_df)[0])
+
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(input_df)
+    is_3d = isinstance(shap_values, np.ndarray) and shap_values.ndim == 3
+
+    classes = list(model.classes_)
+    class_idx = classes.index(predicted) if predicted in classes else 0
+    values = shap_values[0, :, class_idx] if is_3d else shap_values[class_idx][0]
+    base = (
+        explainer.expected_value[class_idx]
+        if hasattr(explainer.expected_value, '__len__')
+        else explainer.expected_value
+    )
+
+    confidence = None
+    if hasattr(model, 'predict_proba'):
+        probabilities = model.predict_proba(input_df)[0]
+        confidence = float(probabilities[class_idx])
+
+    return {
+        "features": features,
+        "input_df": input_df,
+        "predicted": predicted,
+        "values": values,
+        "base": base,
+        "confidence": confidence,
+    }
+
+
+def format_feature_value(feature_name: str, value) -> str:
     try:
-        with get_db_cursor() as (conn, cursor):
-            try:
-                features = extract_user_features(cursor, user_id)
-            except ValueError:
-                raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        numeric = int(value)
+    except Exception:
+        numeric = value
 
-        input_df = pd.DataFrame([features])[TASK_FEATURE_COLUMNS]
-        predicted = str(model.predict(input_df)[0])
+    if feature_name == 'age':
+        return f"{numeric}세"
+    if feature_name == 'is_corporate':
+        return '법인' if numeric == 1 else '개인'
+    if feature_name == 'gender':
+        return '남성' if numeric == 1 else '여성'
+    if feature_name == 'total_balance':
+        return f"{numeric:,}원"
+    if feature_name == 'account_count':
+        return f"{numeric}개"
+    if feature_name == 'default_risk_level':
+        return {0: '없음', 1: '저위험', 2: '중위험', 3: '고위험'}.get(numeric, str(numeric))
+    if feature_name == 'days_since_last_tx':
+        return '거래 없음' if numeric >= 999 else f"{numeric}일"
+    if feature_name in {
+        'recent_deposit_count',
+        'recent_withdrawal_count',
+        'recent_transfer_count',
+        'max_password_fail_count',
+    }:
+        return f"{numeric}회"
+    if feature_name.startswith('has_') or feature_name.endswith('_near_maturity'):
+        return '예' if numeric == 1 else '아니오'
+    return str(value)
 
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(input_df)
-        is_3d = isinstance(shap_values, np.ndarray) and shap_values.ndim == 3
 
-        classes = list(model.classes_)
-        class_idx = classes.index(predicted) if predicted in classes else 0
+def build_top_feature_reasons(features: dict, shap_contributions, limit: int = 3) -> list[dict]:
+    items = []
+    for index, feature_name in enumerate(TASK_FEATURE_COLUMNS):
+        contribution = float(shap_contributions[index])
+        value = features.get(feature_name)
+        meta = FEATURE_DISPLAY_META[feature_name]
+        items.append({
+            "feature": feature_name,
+            "label": meta["label"],
+            "value": format_feature_value(feature_name, value),
+            "message": meta["message"],
+            "contribution": contribution,
+            "strength": abs(contribution),
+            "direction": "positive" if contribution >= 0 else "negative",
+        })
 
-        values = shap_values[0, :, class_idx] if is_3d else shap_values[class_idx][0]
-        base = (
-            explainer.expected_value[class_idx]
-            if hasattr(explainer.expected_value, '__len__')
-            else explainer.expected_value
-        )
+    positive_items = [item for item in items if item["contribution"] > 0]
+    ranked = positive_items if positive_items else items
+    ranked.sort(key=lambda item: item["strength"], reverse=True)
+    return ranked[:limit]
+
+
+@app.get("/py/explain/{user_id}/summary")
+def explain_prediction_summary(user_id: int):
+    """은행원 UI용 AI 예측 근거 요약. raw SHAP plot 대신 상담 문장으로 반환한다."""
+    try:
+        context = get_prediction_explanation_context(user_id)
+        predicted = context["predicted"]
+        meta = DETAIL_TYPE_META.get(predicted, {})
+        reasons = build_top_feature_reasons(context["features"], context["values"])
+        return {
+            "result": "SUCCESS",
+            "userId": user_id,
+            "predictedTaskDetailType": predicted,
+            "predictedTaskType": meta.get("task_type"),
+            "confidence": context["confidence"],
+            "reasons": reasons,
+        }
+    except HTTPException:
+        raise
+    except RuntimeError:
+        raise HTTPException(status_code=500, detail="DB 연결 불가")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.get("/py/explain/{user_id}")
+def explain_prediction(user_id: int):
+    """특정 고객의 AI 예측 근거를 SHAP waterfall 이미지로 반환."""
+    try:
+        context = get_prediction_explanation_context(user_id)
+        input_df = context["input_df"]
+        predicted = context["predicted"]
+        values = context["values"]
+        base = context["base"]
 
         plt.rcParams['font.family'] = 'DejaVu Sans'
         plt.rcParams['axes.unicode_minus'] = True

@@ -55,6 +55,12 @@ const BankerWorkSpace = () => {
     const [recommendProducts, setRecommendProducts] = useState([]);
     const [isRecommendLoading, setIsRecommendLoading] = useState(false);
 
+    // AI 업무 예측 설명 요약 상태
+    const [aiInsight, setAiInsight] = useState(null);
+    const [isAiInsightLoading, setIsAiInsightLoading] = useState(false);
+    const [aiInsightError, setAiInsightError] = useState(null);
+    const [selectedAiReason, setSelectedAiReason] = useState(null);
+
     // 💡 고객 정보 상태 추가
     const [customerInfo, setCustomerInfo] = useState(null);
 
@@ -104,6 +110,13 @@ const BankerWorkSpace = () => {
         if (modalConfig.onConfirm) {
             modalConfig.onConfirm();
         }
+    };
+
+    const handleAiReasonClick = (reason, index) => {
+        setSelectedAiReason({
+            ...reason,
+            rank: index + 1,
+        });
     };
 
     const handleChangePassword = async () => {
@@ -296,6 +309,37 @@ const BankerWorkSpace = () => {
         }
     };
 
+    const loadAiInsight = async (userId) => {
+        if (!userId) {
+            setAiInsight(null);
+            setAiInsightError(null);
+            return;
+        }
+        setIsAiInsightLoading(true);
+        setAiInsightError(null);
+        try {
+            const response = await fetch(`/py/explain/${userId}/summary`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.result === 'SUCCESS') {
+                    setAiInsight(data);
+                } else {
+                    setAiInsight(null);
+                    setAiInsightError('AI 참고 요인을 불러오지 못했습니다.');
+                }
+            } else {
+                setAiInsight(null);
+                setAiInsightError('AI 참고 요인을 불러오지 못했습니다.');
+            }
+        } catch (error) {
+            console.error("Error fetching AI insight:", error);
+            setAiInsight(null);
+            setAiInsightError('AI 참고 요인을 불러오지 못했습니다.');
+        } finally {
+            setIsAiInsightLoading(false);
+        }
+    };
+
     const loadCustomerInfo = async (userId) => {
         if (!userId) {
             setCustomerInfo(null);
@@ -320,15 +364,19 @@ const BankerWorkSpace = () => {
     };
 
     useEffect(() => {
+        setSelectedAiReason(null);
 
         if (selectedTask?.userId) {
             loadUserLogs(selectedTask.userId);
             loadRecommendProducts(selectedTask.userId);
+            loadAiInsight(selectedTask.userId);
             loadCustomerInfo(selectedTask.userId);
         } else {
             setLogList([]);
             setLogError(null);
             setRecommendProducts([]);
+            setAiInsight(null);
+            setAiInsightError(null);
             setCustomerInfo(null);
         }
     }, [selectedTask?.userId]);
@@ -1332,6 +1380,43 @@ const BankerWorkSpace = () => {
                                         </div>
                                     </div>
 
+                                        <div className={styles.aiInsightBox}>
+                                            <h4 className={styles.aiInsightTitle}>AI 상담 참고 요인</h4>
+                                            {!selectedTask?.userId ? (
+                                                <div className={styles.aiInsightEmpty}>선택된 고객이 없습니다</div>
+                                            ) : isAiInsightLoading ? (
+                                                <div className={styles.aiInsightEmpty}>분석 중...</div>
+                                            ) : aiInsightError ? (
+                                                <div className={styles.aiInsightEmpty}>{aiInsightError}</div>
+                                            ) : !aiInsight?.reasons?.length ? (
+                                                <div className={styles.aiInsightEmpty}>참고 요인이 없습니다</div>
+                                            ) : (
+                                                <>
+                                                    <div className={styles.aiPredictionRow}>
+                                                        <span>모델 예측</span>
+                                                        <strong>{aiInsight.predictedTaskDetailType}</strong>
+                                                    </div>
+                                                    <div className={styles.aiReasonList}>
+                                                        {aiInsight.reasons.slice(0, 3).map((reason, index) => (
+                                                            <button
+                                                                type="button"
+                                                                key={reason.feature}
+                                                                className={`${styles.aiReasonItem} ${index === 0 ? styles.aiReasonPrimary : ''}`}
+                                                                onClick={() => handleAiReasonClick(reason, index)}
+                                                            >
+                                                                <span className={styles.aiReasonRank}>{index + 1}</span>
+                                                                <div className={styles.aiReasonText}>
+                                                                    <strong>{reason.label}</strong>
+                                                                    <em>{reason.value}</em>
+                                                                </div>
+                                                                <span className={styles.aiReasonOpen}>상세</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
                                         {/*  AI 추천 상품/서비스 영역 */}
                                         <div className={styles.rightSidebar_infoBox_recommend}>
                                             <h4 className={styles.rightSidebar_infoBox_recommend_title}>AI 추천 상품/서비스</h4>
@@ -1449,6 +1534,46 @@ const BankerWorkSpace = () => {
                 onClose={() => setIsModalOpen(false)}
                 selectedTask={selectedTask}
             />
+
+            <CustomModal
+                isOpen={!!selectedAiReason}
+                onClose={() => setSelectedAiReason(null)}
+                title="AI 상담 참고 요인"
+                onConfirm={() => setSelectedAiReason(null)}
+                confirmText="확인"
+            >
+                {selectedAiReason && (
+                    <div className={styles.aiReasonModal}>
+                        <div className={styles.aiReasonModalHeader}>
+                            <span className={styles.aiReasonModalRank}>{selectedAiReason.rank}</span>
+                            <div>
+                                <span className={styles.aiReasonModalEyebrow}>상위 참고 요인</span>
+                                <h3>{selectedAiReason.label}</h3>
+                            </div>
+                        </div>
+
+                        <dl className={styles.aiReasonModalMeta}>
+                            <div>
+                                <dt>모델 예측</dt>
+                                <dd>{aiInsight?.predictedTaskDetailType || '-'}</dd>
+                            </div>
+                            <div>
+                                <dt>고객 값</dt>
+                                <dd>{selectedAiReason.value || '-'}</dd>
+                            </div>
+                        </dl>
+
+                        <div className={styles.aiReasonModalSection}>
+                            <h4>상담 참고 해석</h4>
+                            <p>{selectedAiReason.message}</p>
+                        </div>
+
+                        <p className={styles.aiReasonModalNotice}>
+                            AI 분석 결과는 상담 참고 정보이며 최종 판단은 상담원이 수행합니다.
+                        </p>
+                    </div>
+                )}
+            </CustomModal>
 
             <CustomModal
                 isOpen={modalConfig.isOpen}
