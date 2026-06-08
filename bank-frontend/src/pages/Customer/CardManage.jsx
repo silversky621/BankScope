@@ -220,7 +220,7 @@ const CardManage = () => {
             )}
 
             {deleteModalOpen && (
-                <div className={styles.modalBackdrop} onClick={() => setDeleteModalOpen(false)}>
+                <div className={styles.modalBackdrop}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <h3>카드 해지</h3>
                         <p style={{ marginTop: '15px', color: '#555', lineHeight: '1.5' }}>

@@ -343,7 +343,7 @@ const CheckCard = () => {
       </div>
 
       {activeAgreementModal && (
-        <div className={styles.pinModalBackdrop} onClick={() => setActiveAgreementModal(null)}>
+        <div className={styles.pinModalBackdrop}>
           <div className={styles.pinModalContent} onClick={(e) => e.stopPropagation()}>
             
             <h3>
@@ -402,15 +402,20 @@ const CheckCard = () => {
               )}
 
             </div>
-            <button className={styles.nextBtn} onClick={handleAgreeClick}>
-              위 약관에 동의합니다
-            </button>
+            <div className={styles.pinActionRow}>
+              <button className={styles.pinCancelBtn} onClick={() => setActiveAgreementModal(null)}>
+                닫기
+              </button>
+              <button className={styles.nextBtn} onClick={handleAgreeClick}>
+                위 약관에 동의합니다
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {isPinModalOpen && (
-        <div className={styles.pinModalBackdrop} onClick={() => setIsPinModalOpen(false)}>
+        <div className={styles.pinModalBackdrop}>
           <div className={styles.pinModalContent} onClick={(e) => e.stopPropagation()} style={{ width: '90%', maxWidth: '400px', textAlign: 'center', padding: '40px' }}>
             <h3>보안 핀(PIN) 번호를 입력해주세요</h3>
             <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>본인 확인을 위해 6자리 핀 번호를 입력합니다.</p>
@@ -442,13 +447,24 @@ const CheckCard = () => {
               })}
             </div>
 
-            <button 
-              className={`${styles.nextBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`} 
-              disabled={pinInput.length !== 6}
-              onClick={handlePinConfirm}
-            >
-              확인
-            </button>
+            <div className={styles.pinActionRow}>
+              <button
+                className={styles.pinCancelBtn}
+                onClick={() => {
+                  setPinInput('');
+                  setIsPinModalOpen(false);
+                }}
+              >
+                취소
+              </button>
+              <button
+                className={`${styles.nextBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`}
+                disabled={pinInput.length !== 6}
+                onClick={handlePinConfirm}
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}

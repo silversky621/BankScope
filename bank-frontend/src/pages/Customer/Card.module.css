@@ -111,6 +111,29 @@
   width: 100%;
 }
 
+.pinActionRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pinActionRow .nextBtn {
+  margin-top: 0;
+  flex: 1;
+}
+
+.pinCancelBtn {
+  flex: 1;
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 30px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .accountCard {
   border: 1px solid #eee;
   border-radius: 16px;

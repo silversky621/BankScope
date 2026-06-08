@@ -6,7 +6,7 @@ import styles from './CustomModal.module.css';
 const CustomModal = ({
                          isOpen,
                          onClose,
-                         onDismiss, // 배경 클릭/ESC/× 로 닫을 때의 동작(미지정 시 onClose)
+                         onDismiss, // × 버튼으로 닫을 때의 동작(미지정 시 onClose)
                          title,
                          children,
                          onConfirm,
@@ -18,7 +18,7 @@ const CustomModal = ({
                      }) => {
     const [isRendered, setIsRendered] = useState(false);
     const [isAnimate, setIsAnimate] = useState(false);
-    // 명시적 버튼 외(배경/ESC/×) 닫힘 시 동작. 미지정 시 단순 닫기.
+    // × 버튼으로 닫을 때의 동작. 미지정 시 단순 닫기.
     const dismiss = onDismiss || onClose;
 
     useEffect(() => {
@@ -46,14 +46,6 @@ const CustomModal = ({
             if (autoCloseTimer) clearTimeout(autoCloseTimer);
         };
     }, [isOpen, duration, onClose]);
-
-    useEffect(() => {
-        const handleEscape = (e) => {
-            if (e.key === 'Escape') dismiss();
-        };
-        if (isOpen) document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [isOpen, dismiss]);
 
     const handleTransitionEnd = (e) => {
         // opacity 트랜지션이 끝나고, 닫히는 중(isAnimate가 false)일 때만 DOM 제거
@@ -83,7 +75,6 @@ const CustomModal = ({
     return createPortal(
         <div
             className={`${styles.overlay} ${isAnimate ? styles.isOpen : ''}`}
-            onClick={(e) => e.target === e.currentTarget && dismiss()}
             onTransitionEnd={handleTransitionEnd}
         >
             <div className={styles.modalBox}>

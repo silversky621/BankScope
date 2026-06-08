@@ -324,7 +324,7 @@ const Home = () => {
             </div>
 
             {isModalOpen && (
-                <div className={styles.modalBackdrop} onClick={() => setIsModalOpen(false)}>
+                <div className={styles.modalBackdrop}>
                     <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalIconWrapper}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -351,7 +351,7 @@ const Home = () => {
             )}
 
             {isAccessModalOpen && (
-                <div className={styles.modalBackdrop} onClick={() => setIsAccessModalOpen(false)}>
+                <div className={styles.modalBackdrop}>
                     <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalIconWrapper}>
                             {/* 엑스(X) 아이콘 */}
@@ -375,7 +375,7 @@ const Home = () => {
             )}
 
             {isTermsModalOpen && (
-                <div className={styles.modalBackdrop} onClick={() => setIsTermsModalOpen(false)}>
+                <div className={styles.modalBackdrop}>
                     <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()} style={{ width: '90%', maxWidth: '500px' }}>
                         <h2 className={styles.modalTitle} style={{ textAlign: 'left', marginBottom: '15px' }}>
                             {termsType === 'loan' ? '대출 상품 가입 약관' : '주택청약종합저축 가입 약관'}

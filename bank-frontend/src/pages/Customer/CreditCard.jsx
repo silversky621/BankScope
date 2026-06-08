@@ -455,7 +455,7 @@ const CreditCard = () => {
 
             {/* 약관 모달 */}
             {activeModal && (
-                <div className={styles.pinModalBackdrop} onClick={() => setActiveModal(null)}>
+                <div className={styles.pinModalBackdrop}>
                     <div className={styles.pinModalContent} onClick={(e) => e.stopPropagation()}>
                         
                         {activeModal === 'term1' && (
@@ -473,7 +473,14 @@ const CreditCard = () => {
                                     <strong>제 3조 (비밀번호 관리 의무)</strong><br />
                                     회원은 카드 비밀번호 및 PIN 번호가 타인에게 노출되지 않도록 철저히 관리해야 하며, 고의 또는 중대한 과실로 인한 유출로 발생한 손해는 회원이 책임집니다.
                                 </div>
-                                <button className={styles.nextBtn} onClick={handleAgreeClick}>위 약관에 동의합니다</button>
+                                <div className={styles.pinActionRow}>
+                                    <button className={styles.pinCancelBtn} onClick={() => setActiveModal(null)}>
+                                        닫기
+                                    </button>
+                                    <button className={styles.nextBtn} onClick={handleAgreeClick}>
+                                        위 약관에 동의합니다
+                                    </button>
+                                </div>
                             </>
                         )}
 
@@ -491,7 +498,14 @@ const CreditCard = () => {
                                     <strong>3. 보유 및 이용 기간</strong><br />
                                     본 동의서의 효력은 카드 발급 심사 완료 시점 또는 고객의 동의 철회 시까지 유지됩니다.
                                 </div>
-                                <button className={styles.nextBtn} onClick={handleAgreeClick}>위 약관에 동의합니다</button>
+                                <div className={styles.pinActionRow}>
+                                    <button className={styles.pinCancelBtn} onClick={() => setActiveModal(null)}>
+                                        닫기
+                                    </button>
+                                    <button className={styles.nextBtn} onClick={handleAgreeClick}>
+                                        위 약관에 동의합니다
+                                    </button>
+                                </div>
                             </>
                         )}
 
@@ -518,7 +532,7 @@ const CreditCard = () => {
 
             {/* 핀 번호 입력 모달 */}
             {isPinModalOpen && (
-                <div className={styles.pinModalBackdrop} onClick={() => setIsPinModalOpen(false)}>
+                <div className={styles.pinModalBackdrop}>
                     <div className={styles.pinModalContent} onClick={(e) => e.stopPropagation()}>
                         <h3>보안 핀(PIN) 번호를 입력해주세요</h3>
                         
@@ -549,13 +563,24 @@ const CreditCard = () => {
                             })}
                         </div>
 
-                        <button 
-                            className={`${styles.nextBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`} 
-                            disabled={pinInput.length !== 6}
-                            onClick={handlePinConfirm}
-                        >
-                            확인
-                        </button>
+                        <div className={styles.pinActionRow}>
+                            <button
+                                className={styles.pinCancelBtn}
+                                onClick={() => {
+                                    setPinInput('');
+                                    setIsPinModalOpen(false);
+                                }}
+                            >
+                                취소
+                            </button>
+                            <button
+                                className={`${styles.nextBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`}
+                                disabled={pinInput.length !== 6}
+                                onClick={handlePinConfirm}
+                            >
+                                확인
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

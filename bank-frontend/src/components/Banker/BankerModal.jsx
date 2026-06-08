@@ -3,7 +3,7 @@ import styles from './BankerModal.module.css';
 
 const BankerModal = ({ name = "고객", onClose, onCancel = onClose, onCreate = onClose }) => {
     return (
-        <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.overlay}>
             <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
                 {/* 상단 헤더 영역 */}
                 <div className={styles.header}>

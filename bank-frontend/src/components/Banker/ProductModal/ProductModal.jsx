@@ -56,7 +56,6 @@ const ProductModal = ({ product, isOpen, onClose, selectedTask }) => {
   return (
       <div
         className={`${styles.modalOverlay} ${isAnimate ? styles.isOpen : ''}`}
-        onClick={onClose}
         onTransitionEnd={handleTransitionEnd}
       >
         <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>

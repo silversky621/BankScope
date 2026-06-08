@@ -104,6 +104,29 @@
   width: 100%;
 }
 
+.pinActionRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pinActionRow .submitBtn {
+  margin-top: 0;
+  flex: 1;
+}
+
+.pinCancelBtn {
+  flex: 1;
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 12px;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .disabledBtn {
   background-color: #ccc !important;
   cursor: not-allowed !important;

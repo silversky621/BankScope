@@ -358,7 +358,7 @@ export default function Admin_dashboard() {
       </main>
 
       {isTransferModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsTransferModalOpen(false)}>
+        <div className={styles.modalOverlay}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>전체 대기열</h2>

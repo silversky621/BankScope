@@ -131,7 +131,7 @@ export default function InterestManagement() {
       </div>
 
       {isFormModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsFormModalOpen(false)}>
+        <div className={styles.modalOverlay}>
           <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div className={styles.modalTitleArea}>

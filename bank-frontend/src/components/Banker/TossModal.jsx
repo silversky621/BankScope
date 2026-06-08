@@ -93,7 +93,7 @@ const TossModal = ({ onClose, task }) => {
 
 
     return (
-        <div className={styles.modalOverlay} onClick={onClose}>
+        <div className={styles.modalOverlay}>
             <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
                 <header className={styles.header}>
                     <h1>창구 이관</h1>

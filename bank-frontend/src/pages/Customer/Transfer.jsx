@@ -213,7 +213,7 @@ const Transfer = () => {
       </div>
 
       {isPinModalOpen && (
-        <div className={styles.pinModalBackdrop} onClick={() => setIsPinModalOpen(false)}>
+        <div className={styles.pinModalBackdrop}>
           <div className={styles.pinModalContent} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ marginTop: 0 }}>핀 번호를 입력해주세요</h3>
             
@@ -239,13 +239,24 @@ const Transfer = () => {
               })}
             </div>
 
-            <button 
-              className={`${styles.submitBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`} 
-              disabled={pinInput.length !== 6}
-              onClick={handlePinConfirm}
-            >
-              확인
-            </button>
+            <div className={styles.pinActionRow}>
+              <button
+                className={styles.pinCancelBtn}
+                onClick={() => {
+                  setPinInput('');
+                  setIsPinModalOpen(false);
+                }}
+              >
+                취소
+              </button>
+              <button
+                className={`${styles.submitBtn} ${pinInput.length !== 6 ? styles.disabledBtn : ''}`}
+                disabled={pinInput.length !== 6}
+                onClick={handlePinConfirm}
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}
