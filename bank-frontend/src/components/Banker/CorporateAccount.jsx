@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './CorporateAccount.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const CorporateAccount = ({ onCancel, onComplete, selectedTask, taskId }) => {
+const CorporateAccount = ({ onComplete, selectedTask, taskId }) => {
     const { openModal } = useModal();
     const [corporateProducts, setCorporateProducts] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
@@ -236,7 +236,6 @@ const CorporateAccount = ({ onCancel, onComplete, selectedTask, taskId }) => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>업무 취소</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit} disabled={!formData.productId}>계좌 개설 승인</button>
                 </div>
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './CorporateLoan.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const CorporateLoan = ({ onCancel ,onComplete, selectedTask }) => {
+const CorporateLoan = ({ onReturnToTaskSelect, onComplete, selectedTask }) => {
     const { openModal } = useModal();
 
     // 1. State Management (백엔드 DTO 규격에 맞춘 상태)
@@ -22,7 +22,7 @@ const CorporateLoan = ({ onCancel ,onComplete, selectedTask }) => {
         const validateAndFetch = async () => {
             const userId = selectedTask?.userId;
             if (!userId) {
-                openModal({ message: "상담 중인 고객 정보가 없습니다.", onConfirm: onCancel });
+                openModal({ message: "상담 중인 고객 정보가 없습니다.", onConfirm: onReturnToTaskSelect });
                 return;
             }
 
@@ -41,7 +41,7 @@ const CorporateLoan = ({ onCancel ,onComplete, selectedTask }) => {
                         }
                     }
                 } else {
-                    openModal({ message: "고객 정보 조회에 실패했습니다.", onConfirm: onCancel });
+                    openModal({ message: "고객 정보 조회에 실패했습니다.", onConfirm: onReturnToTaskSelect });
                     return;
                 }
 
@@ -131,7 +131,7 @@ const CorporateLoan = ({ onCancel ,onComplete, selectedTask }) => {
                             if (onComplete) {
                                 onComplete(payload);
                             } else {
-                                onCancel();
+                                onReturnToTaskSelect?.();
                             }
                         }
                     });
@@ -285,7 +285,6 @@ const CorporateLoan = ({ onCancel ,onComplete, selectedTask }) => {
 
                 {/* 5. 버튼 영역 */}
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>업무 취소</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit}>심사 완료/승인</button>
                 </div>
             </div>

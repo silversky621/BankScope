@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './Withdraw.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const Withdraw = ({ onCancel, taskId, selectedTask, onSuccess }) => {
+const Withdraw = ({ taskId, selectedTask, onSuccess }) => {
     const { openModal } = useModal();
     const [accounts, setAccounts] = useState([]); 
     const [isLoading, setIsLoading] = useState(true); 
@@ -202,7 +202,6 @@ const Withdraw = ({ onCancel, taskId, selectedTask, onSuccess }) => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                     <button className={styles.btnSubmit} onClick={handleWithdrawSubmit}>출금 실행</button>
                 </div>
             </div>

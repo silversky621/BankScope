@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styles from './UpdateCorporate.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const UpdateCorporate = ({ selectedTask, onCancel, onComplete }) => {
+const UpdateCorporate = ({ selectedTask, onComplete }) => {
     const { openModal } = useModal();
 
     const showAlert = useCallback((message, onConfirm = null) => {
@@ -172,9 +172,6 @@ const UpdateCorporate = ({ selectedTask, onCancel, onComplete }) => {
             </div>
 
             <div className={styles.accountBtnRow}>
-                <button className={styles.btnCancel} onClick={onCancel}>
-                    취소
-                </button>
                 <button 
                     className={styles.btnCreate} 
                     onClick={handleSubmit}

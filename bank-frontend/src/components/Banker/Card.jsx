@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styles from './Card.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const Card = ({ onCancel, selectedTask, onSuccess }) => {
+const Card = ({ selectedTask, onSuccess }) => {
     // 카드수령(웹에서 이미 신청한 카드를 수령)이면, 발급 폼 대신 '카드 목록'(신청 카드 정보 + 활성화 버튼)을 기본으로 보여준다.
     const [activeTab, setActiveTab] = useState(
         selectedTask?.taskDetailType === '카드수령' ? 'list' : 'register'
@@ -319,7 +319,6 @@ const Card = ({ onCancel, selectedTask, onSuccess }) => {
 
                     <div className={styles.registerActions}>
                         <button className={styles.btnReset} onClick={resetForm}>초기화</button>
-                        <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                         <button className={styles.btnSubmit} onClick={handleSubmit}>카드 발급 실행</button>
                     </div>
                 </div>

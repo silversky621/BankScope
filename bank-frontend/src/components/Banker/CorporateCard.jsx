@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styles from './CorporateCard.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const CorporateCard = ({ onCancel, selectedTask, onSuccess }) => {
+const CorporateCard = ({ onReturnToTaskSelect, selectedTask, onSuccess }) => {
     const [activeTab, setActiveTab] = useState('register');
     const { openModal } = useModal();
     const [isCorporate, setIsCorporate] = useState(null);
@@ -37,7 +37,7 @@ const CorporateCard = ({ onCancel, selectedTask, onSuccess }) => {
         const validateAndFetch = async () => {
             const userId = selectedTask?.userId;
             if (!userId) {
-                openModal({ message: "상담 중인 고객 정보가 없습니다.", onConfirm: onCancel });
+                openModal({ message: "상담 중인 고객 정보가 없습니다.", onConfirm: onReturnToTaskSelect });
                 return;
             }
 
@@ -66,7 +66,7 @@ const CorporateCard = ({ onCancel, selectedTask, onSuccess }) => {
                         }));
                     }
                 } else {
-                    openModal({ message: "고객 정보 조회에 실패했습니다.", onConfirm: onCancel });
+                    openModal({ message: "고객 정보 조회에 실패했습니다.", onConfirm: onReturnToTaskSelect });
                     return;
                 }
 
@@ -369,7 +369,6 @@ const CorporateCard = ({ onCancel, selectedTask, onSuccess }) => {
 
                     <div className={styles.registerActions}>
                         <button className={styles.btnReset} onClick={resetForm}>초기화</button>
-                        <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                         <button className={styles.btnSubmit} onClick={handleSubmit}>법인카드 발급 승인</button>
                     </div>
                 </div>

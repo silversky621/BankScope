@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useModal } from '../../context/ModalContext';
 import styles from './CorporateBankrupt.module.css';
 
-const CorporateBankrupt = ({ onCancel, onComplete, selectedTask }) => {
+const CorporateBankrupt = ({ onReturnToTaskSelect, onComplete, selectedTask }) => {
     const { openModal } = useModal();
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -45,7 +45,7 @@ const CorporateBankrupt = ({ onCancel, onComplete, selectedTask }) => {
 
             } catch (error) {
                 console.error("초기 데이터 조회 실패:", error);
-                showAlert("데이터를 불러오는 중 오류가 발생했습니다.", onCancel);
+                showAlert("데이터를 불러오는 중 오류가 발생했습니다.", onReturnToTaskSelect);
             }
         };
 
@@ -58,7 +58,7 @@ const CorporateBankrupt = ({ onCancel, onComplete, selectedTask }) => {
         const fetchRiskStatus = async () => {
             const userId = selectedTask?.userId;
             if (!userId) {
-                showAlert("유효하지 않은 요청입니다. (User ID 누락)", onCancel);
+                showAlert("유효하지 않은 요청입니다. (User ID 누락)", onReturnToTaskSelect);
                 return;
             }
 
@@ -81,11 +81,11 @@ const CorporateBankrupt = ({ onCancel, onComplete, selectedTask }) => {
                     }));
                     setIsLoaded(true);
                 } else {
-                    showAlert(result.message || "기업 위험 정보를 불러오지 못했습니다.", onCancel);
+                    showAlert(result.message || "기업 위험 정보를 불러오지 못했습니다.", onReturnToTaskSelect);
                 }
             } catch (error) {
                 console.error("Risk Status Fetch Error:", error);
-                showAlert("서버 통신 중 오류가 발생했습니다.", onCancel);
+                showAlert("서버 통신 중 오류가 발생했습니다.", onReturnToTaskSelect);
             }
         };
 
@@ -238,7 +238,6 @@ const CorporateBankrupt = ({ onCancel, onComplete, selectedTask }) => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>업무 취소</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit}>부도 확정 처리</button>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import loansIcon from '../../images/Home/Loans.png';
 import { useModal } from '../../context/ModalContext';
 
 
-const LoanPayment = ({ onCancel, onCreate, selectedTask }) => {
+const LoanPayment = ({ onCreate, selectedTask }) => {
     const [loans, setLoans] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [selectedLoan, setSelectedLoan] = useState(null);
@@ -310,9 +310,6 @@ const LoanPayment = ({ onCancel, onCreate, selectedTask }) => {
 
             {/* 5. 하단 액션 버튼 */}
             <div className={styles.buttonRow}>
-                <div className={styles.leftActions}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
-                </div>
                 <div className={styles.rightActions}>
                     <button className={styles.btnReset} onClick={handleReset}>초기화</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit}>대출상환신청</button>

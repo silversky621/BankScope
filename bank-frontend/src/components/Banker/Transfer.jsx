@@ -6,7 +6,7 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ko-KR').format(amount);
 };
 
-const Transfer = ({ onCancel, taskId, selectedTask, onSuccess }) => {
+const Transfer = ({ taskId, selectedTask, onSuccess }) => {
     const { openModal } = useModal();
     const [accounts, setAccounts] = useState([]); 
     const [isLoading, setIsLoading] = useState(true);
@@ -186,7 +186,6 @@ const Transfer = ({ onCancel, taskId, selectedTask, onSuccess }) => {
             </div>
 
             <div className={styles.buttonRow}>
-                <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                 <button className={styles.btnSubmit} onClick={handleTransferSubmit}>이체 실행</button>
             </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import styles from './CorporateArrears.module.css';
 import { useModal } from "../../context/ModalContext.jsx";
 
-const CorporateArrears = ({ onCancel, onComplete, selectedTask }) => {
+const CorporateArrears = ({ onReturnToTaskSelect, onComplete, selectedTask }) => {
     const { openModal } = useModal();
     const userId = selectedTask?.userId;
 
@@ -62,7 +62,7 @@ const CorporateArrears = ({ onCancel, onComplete, selectedTask }) => {
                 }
             } catch (error) {
                 console.error("초기 데이터 조회 실패:", error);
-                showAlert("데이터를 불러오는 중 오류가 발생했습니다.", onCancel);
+                showAlert("데이터를 불러오는 중 오류가 발생했습니다.", onReturnToTaskSelect);
             }
         };
 
@@ -232,7 +232,6 @@ const CorporateArrears = ({ onCancel, onComplete, selectedTask }) => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit}>납부 승인</button>
                 </div>
             </div>

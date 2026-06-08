@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './Deposit.module.css';
 import { useModal } from '../../context/ModalContext';
 
-const Deposit = ({ onCancel, taskId, selectedTask, onSuccess }) => {
+const Deposit = ({ taskId, selectedTask, onSuccess }) => {
     const { openModal } = useModal();
     const [accounts, setAccounts] = useState([]); 
     const [isLoading, setIsLoading] = useState(true);
@@ -206,7 +206,6 @@ const Deposit = ({ onCancel, taskId, selectedTask, onSuccess }) => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                     <button className={styles.btnSubmit} onClick={handleDepositSubmit}>입금 실행</button>
                 </div>
             </div>

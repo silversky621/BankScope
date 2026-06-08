@@ -596,7 +596,7 @@ const BankerWorkSpace = () => {
     };
 
     // 업무 수락 취소 (IN_PROGRESS -> WAITING)
-    const handleCancelAcceptTask = async (task) => {
+    const performCancelAcceptTask = async (task) => {
         try {
             const response = await fetch(`/api/member/task/${task.taskId}/status?status=WAITING`, {
                 method: 'PATCH',
@@ -640,6 +640,17 @@ const BankerWorkSpace = () => {
     };
 
     // 업무 기록 저장 함수
+    const handleCancelAcceptTask = (task) => {
+        if (!task?.taskId) return;
+        openModal({
+            title: '업무 취소',
+            message: '이 업무를 취소하고 대기열로 되돌리시겠습니까?',
+            confirmText: '업무 취소',
+            cancelText: '계속 처리',
+            onConfirm: () => performCancelAcceptTask(task)
+        });
+    };
+
     const handlePostLog = async (idValue) => {
         if (!note.trim()) {
             return;
@@ -932,10 +943,21 @@ const BankerWorkSpace = () => {
                                             <div className={styles.cardActions}>
                                                 {task.status === 'IN_PROGRESS' ? (
                                                     <>
-                                                        <button className={styles.btnProcessing}>처리중..</button>
+                                                        <button
+                                                            className={styles.btnCancelTask}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCancelAcceptTask(task);
+                                                            }}
+                                                        >
+                                                            업무 취소
+                                                        </button>
                                                         <button
                                                             className={styles.btnAccept}
-                                                            onClick={() => handleCompleteTask(selectedTask)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCompleteTask(task);
+                                                            }}
                                                         >
                                                             업무 종료
                                                         </button>
@@ -1037,13 +1059,6 @@ const BankerWorkSpace = () => {
                                                                     <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
                                                                         <button
                                                                             className={styles.btnAccept}
-                                                                            onClick={() => handleCancelAcceptTask(selectedTask)}
-                                                                            style={{ color: '#eaeaea' }}
-                                                                        >
-                                                                            취소
-                                                                        </button>
-                                                                        <button
-                                                                            className={styles.btnAccept}
                                                                             onClick={() => handleCompleteTask(selectedTask)}
                                                                         >
                                                                             업무 종료
@@ -1066,10 +1081,6 @@ const BankerWorkSpace = () => {
                                                                 setProductId={setProductId}
                                                                 amount={amount}
                                                                 setAmount={setAmount}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onCreate={handleCreateAccount}
                                                             />
                                                         )}
@@ -1077,10 +1088,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CORPORATE_REGISTER" && (
                                                             <UpdateCorporate
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1091,10 +1098,6 @@ const BankerWorkSpace = () => {
                                                         {/*입금*/}
                                                         {selectedWorkType === "DEPOSIT" && (
                                                             <Deposit
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 taskId={selectedTask?.id || selectedTask?.taskId || 0}
                                                                 selectedTask={selectedTask}
                                                                 onSuccess={() => {
@@ -1108,10 +1111,6 @@ const BankerWorkSpace = () => {
                                                         {/*출금*/}
                                                         {selectedWorkType === "WITHDRAW" && (
                                                             <Withdraw
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 taskId={selectedTask?.id}
                                                                 selectedTask={selectedTask}
                                                                 onSuccess={() => {
@@ -1125,10 +1124,6 @@ const BankerWorkSpace = () => {
                                                         {/*이체*/}
                                                         {selectedWorkType === "TRANSFER" && (
                                                             <Transfer
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 taskId={selectedTask?.id}
                                                                 selectedTask={selectedTask}
                                                                 onSuccess={() => {
@@ -1144,10 +1139,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CARD" && (
                                                             <Card
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onSuccess={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1160,10 +1151,6 @@ const BankerWorkSpace = () => {
                                                         {/*통장비번변경*/}
                                                         {selectedWorkType === "CHANGE-PASSWORD" && (
                                                             <ChangePassword
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    if (selectedTask) handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1178,10 +1165,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "ACCOUNTS" && (
                                                             <Accounts
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onCreate={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1195,10 +1178,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "LOAN-PAYMENT" && (
                                                             <LoanPayment
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onCreate={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1212,10 +1191,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "FINANCIAL-PRODUCT" && (
                                                             <FinancialProduct
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onSubmit={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1229,10 +1204,7 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CORPORATE-LOAN" && (
                                                             <CorporateLoan
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
+                                                                onReturnToTaskSelect={() => setSelectedWorkType("TASK_SELECT")}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1245,10 +1217,6 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CORPORATE-ACCOUNT" && (
                                                             <CorporateAccount
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1260,10 +1228,7 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CORPORATE-CARD" && (
                                                             <CorporateCard
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
+                                                                onReturnToTaskSelect={() => setSelectedWorkType("TASK_SELECT")}
                                                                 onSuccess={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1275,10 +1240,7 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "BANKRUPT-MANAGEMENT" && (
                                                             <CorporateBankrupt
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
+                                                                onReturnToTaskSelect={() => setSelectedWorkType("TASK_SELECT")}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1290,10 +1252,7 @@ const BankerWorkSpace = () => {
                                                         {selectedWorkType === "CORPORATE-ARREARS" && (
                                                             <CorporateArrears
                                                                 selectedTask={selectedTask}
-                                                                onCancel={() => {
-                                                                    setSelectedWorkType(null);
-                                                                    handleCancelAcceptTask(selectedTask);
-                                                                }}
+                                                                onReturnToTaskSelect={() => setSelectedWorkType("TASK_SELECT")}
                                                                 onComplete={() => {
                                                                     const finalId = selectedTask?.id || selectedTask?.taskId || selectedTask;
                                                                     handlePostLog(finalId);
@@ -1304,16 +1263,9 @@ const BankerWorkSpace = () => {
                                                         {selectedTask.status !== 'WAITING' && (
                                                             <>
                                                                 <div className={styles.backCard}>
-                                                                    {/*<button
-                                                                        className={styles.backButton}
-                                                                        onClick={() => setSelectedWorkType("TASK_SELECT")}
-                                                                    >
-                                                                        ← 이전으로
-                                                                    </button>*/}
                                                                     <button
                                                                         className={styles.backButton}
                                                                         onClick={() => {
-                                                                            // 💡 디버그 3: 이전으로 돌아갈 때 넘겨줄 값 확인
                                                                             setSelectedWorkType("TASK_SELECT");
                                                                         }}
                                                                     >

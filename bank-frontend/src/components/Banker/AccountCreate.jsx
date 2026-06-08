@@ -11,7 +11,6 @@ const AccountCreate = ({
                          amount,
                          setAmount, // amount를 변경할 수 있는 setter 함수 추가
                          setConfirmPassword,
-                         onCancel,
                          onCreate,
                          productId,
                          setProductId,
@@ -143,9 +142,6 @@ const AccountCreate = ({
 
 
         <div className={styles.accountBtnRow}>
-          <button className={styles.btnCancel} onClick={onCancel}>
-            취소
-          </button>
           <button
               className={styles.btnCreate}
               onClick={onCreate}

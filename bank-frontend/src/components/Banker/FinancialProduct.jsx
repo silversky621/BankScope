@@ -3,7 +3,7 @@ import styles from './FinancialProduct.module.css';
 import TransFerIcon from '../../images/Banker/transfer.png';
 import { useModal } from '../../context/ModalContext';
 
-const FinancialProduct = ({ onCancel, onSubmit, selectedTask }) => {
+const FinancialProduct = ({ onSubmit, selectedTask }) => {
     const { openModal } = useModal();
 
     const showAlert = useCallback((message, onConfirm = null) => {
@@ -160,11 +160,7 @@ const FinancialProduct = ({ onCancel, onSubmit, selectedTask }) => {
                 const data = await response.json();
                 if (data.result === 'SUCCESS') {
                     showAlert('대출 상품 신청이 완료되었습니다.', () => {
-                        if (onSubmit) {
-                            onSubmit(payload);
-                        } else {
-                            onCancel(); // 완료 시 창 닫기 등 기본 동작
-                        }
+                        onSubmit?.(payload);
                     });
                 } else if(data.result === 'FAILURE_INVALID_AMOUNT') {
                     showAlert('올바르지않은 대출 원금입니다.');
@@ -311,9 +307,6 @@ const FinancialProduct = ({ onCancel, onSubmit, selectedTask }) => {
 
             {/* 5. 하단 버튼 영역 */}
             <div className={styles.buttonRow}>
-                <div className={styles.leftActions}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
-                </div>
                 <div className={styles.rightActions}>
                     <button className={styles.btnReset} onClick={handleReset}>초기화</button>
                     <button className={styles.btnSubmit} onClick={handleSubmit}>신청 확정</button>

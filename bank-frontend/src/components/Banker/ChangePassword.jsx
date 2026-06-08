@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useModal } from '../../context/ModalContext';
 import styles from './ChangePassword.module.css';
 
-const ChangePassword = ({ onCancel, onComplete, selectedTask }) => {
+const ChangePassword = ({ onComplete, selectedTask }) => {
     const { openModal } = useModal();
 
     const [accounts, setAccounts] = useState([]);
@@ -231,7 +231,6 @@ const ChangePassword = ({ onCancel, onComplete, selectedTask }) => {
 
                 {/* 4. 하단 버튼 영역 */}
                 <div className={styles.buttonRow}>
-                    <button className={styles.btnCancel} onClick={onCancel}>취소</button>
                     <button
                         className={styles.btnSubmit}
                         onClick={handleSubmit}

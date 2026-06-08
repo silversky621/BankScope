@@ -4,7 +4,7 @@ import styles from "./Accounts.module.css";
 import { useAuth } from '../../context/AuthContext';
 import { useModal } from '../../context/ModalContext';
 
-const Accounts = ({ onCancel, onCreate, selectedTask }) => {
+const Accounts = ({ onCreate, selectedTask }) => {
     const { openModal } = useModal();
 
     const showAlert = useCallback((message, onConfirm = null) => {
@@ -532,10 +532,6 @@ const Accounts = ({ onCancel, onCreate, selectedTask }) => {
             </div>
 
             <div className={styles.accountBtnRow}>
-                <button className={styles.btnCancel} onClick={onCancel}>
-                    취소
-                </button>
-
                 <button className={styles.btnCreate} onClick={handleSubmit}>
                     계좌 개설
                 </button>

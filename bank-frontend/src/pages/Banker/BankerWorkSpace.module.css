@@ -380,7 +380,6 @@
 }
 
 
-.btnProcessing { background: #a0aec0; color: white; cursor: not-allowed !important;}
 .btnComplete { background: #35987c; color: white; }
 
 /* --- 중앙 및 우측 메인 콘텐츠 --- */
@@ -888,6 +887,17 @@
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
+}
+
+.btnCancelTask {
+    background: #ef4444;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.btnCancelTask:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
 }
 
 .btnStart{
