@@ -48,10 +48,13 @@ def load_db_task_data() -> pd.DataFrame | None:
         cursor = conn.cursor(dictionary=True)
 
         # COMPLETED 상태 + 유효 라벨인 task만 대상 (동일 고객의 중복 라벨도 포함)
+        # DCG* ticket은 관리자 혼잡도 UI 확인용 이력이라 모델 학습에서는 제외한다.
         placeholders = ','.join(['%s'] * len(VALID_LABELS))
         cursor.execute(
             f"SELECT user_id, task_detail_type FROM task "
-            f"WHERE status = 'COMPLETED' AND task_detail_type IN ({placeholders})",
+            f"WHERE status = 'COMPLETED' "
+            f"AND task_detail_type IN ({placeholders}) "
+            f"AND ticket_number NOT LIKE 'DCG%'",
             list(VALID_LABELS),
         )
         tasks = cursor.fetchall()
