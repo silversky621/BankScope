@@ -90,11 +90,11 @@ public class TaskController {
         return taskService.getWaitingCountByTaskType();
     }
 
-    @Operation(summary = "시간대별 예상 혼잡도", description = "과거 완료된 task의 시간대별 분포를 반환합니다.")
+    @Operation(summary = "시간대별 예상 혼잡도", description = "최근 8주 동일 요일의 시간대별 접수 이력을 업무별 처리시간으로 환산해 현재 운영 창구 수 대비 혼잡도를 반환합니다.")
     @GetMapping(value = "/hourly-stats", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<Map<String, Object>> getHourlyStats() {
-        return taskService.getHourlyTaskCounts();
+        return taskService.getHourlyCongestionStats();
     }
 
     @Operation(summary = "창구 토스", description = "내가 처리할수 없는 업무 창구 토스하기 , task의 memberId와 WAITING 이나 IN_PROGRESS 상태인 업무를 WAITING으로 전환" )

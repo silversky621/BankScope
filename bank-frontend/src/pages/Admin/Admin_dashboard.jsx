@@ -27,6 +27,12 @@ const formatTime = (seconds) => {
   return `${m}:${s}`;
 };
 
+const getCongestionBarBackground = (value, isNow) => {
+  if (value >= 100) return isNow ? "linear-gradient(180deg, #ef4444, #b91c1c)" : "#ef4444";
+  if (value >= 70) return isNow ? "linear-gradient(180deg, #f59e0b, #d97706)" : "#f59e0b";
+  return isNow ? "linear-gradient(180deg, #009A83, #007f6b)" : "#e2e8f0";
+};
+
 export default function Admin_dashboard() {
   const { openModal } = useModal();
 
@@ -215,7 +221,7 @@ export default function Admin_dashboard() {
   };
 
   const timeStr = time.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const maxHourly = Math.max(...hourlyData.map(d => d.total), 1);
+  const maxHourly = Math.max(100, ...hourlyData.map(d => Number(d.total) || 0));
   const currentHour = String(new Date().getHours()).padStart(2, "0");
 
   return (
@@ -301,10 +307,19 @@ export default function Admin_dashboard() {
               <div className={styles.chartBars}>
                 {hourlyData.map((d, i) => {
                   const isNow = d.h === currentHour;
+                  const congestion = Number(d.total) || 0;
+                  const barHeight = Math.min((congestion / maxHourly) * 100, 100);
                   return (
                     <div key={i} className={styles.barCol}>
-                      <div style={{ fontSize: 11, color: isNow ? "#031714" : "#94a3b8", fontWeight: isNow ? 800 : 500, marginBottom: 4 }}>{d.total}</div>
-                      <div className={styles.barFill} style={{ height: `${(d.total / maxHourly) * 100}%`, background: isNow ? "linear-gradient(180deg, #009A83, #007f6b)" : "#e2e8f0" }} />
+                      <div style={{ fontSize: 11, color: isNow ? "#031714" : "#94a3b8", fontWeight: isNow ? 800 : 500, marginBottom: 4 }}>{congestion}%</div>
+                      <div
+                        className={styles.barFill}
+                        style={{
+                          height: `${barHeight}%`,
+                          minHeight: congestion > 0 ? 4 : 0,
+                          background: getCongestionBarBackground(congestion, isNow)
+                        }}
+                      />
                       <div className={styles.barLabel}>{d.h}시</div>
                     </div>
                   );

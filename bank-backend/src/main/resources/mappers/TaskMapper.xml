@@ -136,12 +136,30 @@
         WHERE status = 'WAITING';
     </select>
 
-    <select id="selectHourlyTaskCounts" resultType="java.util.Map">
-        SELECT HOUR(created_at) AS hour, COUNT(*) AS cnt
-        FROM bank.task
-        WHERE status = 'COMPLETED'
-          AND HOUR(created_at) BETWEEN 9 AND 17
-        GROUP BY HOUR(created_at)
+    <select id="selectHourlyAverageWorkloadMinutes" resultType="java.util.Map">
+        SELECT
+            HOUR(t.created_at) AS hour,
+            SUM(
+                CASE t.task_type
+                    WHEN '빠른 업무' THEN 5
+                    WHEN '상담 업무' THEN 10
+                    WHEN '기업 • 특수' THEN 25
+                    ELSE 5
+                END
+            ) / NULLIF((
+                SELECT COUNT(DISTINCT DATE(t2.created_at))
+                FROM bank.task t2
+                WHERE t2.created_at >= DATE_SUB(CURDATE(), INTERVAL 8 WEEK)
+                  AND DATE(t2.created_at) &lt; CURDATE()
+                  AND DAYOFWEEK(t2.created_at) = DAYOFWEEK(CURDATE())
+                  AND HOUR(t2.created_at) BETWEEN 9 AND 17
+            ), 0) AS avgWorkloadMinutes
+        FROM bank.task t
+        WHERE t.created_at >= DATE_SUB(CURDATE(), INTERVAL 8 WEEK)
+          AND DATE(t.created_at) &lt; CURDATE()
+          AND DAYOFWEEK(t.created_at) = DAYOFWEEK(CURDATE())
+          AND HOUR(t.created_at) BETWEEN 9 AND 17
+        GROUP BY HOUR(t.created_at)
         ORDER BY hour
     </select>
 

@@ -149,21 +149,28 @@ public class TaskService {
         return taskMapper.countAllWaitingPerson();
     }
 
-    public List<Map<String, Object>> getHourlyTaskCounts() {
-        List<Map<String, Object>> rows = taskMapper.selectHourlyTaskCounts();
-        // 9~17시 모든 시간대를 0으로 초기화 후 채움
-        Map<Integer, Long> countMap = new java.util.LinkedHashMap<>();
-        for (int h = 9; h <= 17; h++) countMap.put(h, 0L);
-        for (Map<String, Object> row : rows) {
-            int hour = ((Number) row.get("hour")).intValue();
-            long cnt = ((Number) row.get("cnt")).longValue();
-            countMap.put(hour, cnt);
+    public List<Map<String, Object>> getHourlyCongestionStats() {
+        List<Map<String, Object>> rows = taskMapper.selectHourlyAverageWorkloadMinutes();
+        int availableMembers = taskMapper.countAvailableMembers();
+        double hourlyCapacityMinutes = availableMembers * 60.0;
+
+        Map<Integer, Long> congestionByHour = new java.util.LinkedHashMap<>();
+        for (int h = 9; h <= 17; h++) congestionByHour.put(h, 0L);
+
+        if (hourlyCapacityMinutes > 0) {
+            for (Map<String, Object> row : rows) {
+                int hour = ((Number) row.get("hour")).intValue();
+                double avgWorkloadMinutes = ((Number) row.get("avgWorkloadMinutes")).doubleValue();
+                long congestionRate = Math.round((avgWorkloadMinutes / hourlyCapacityMinutes) * 100);
+                congestionByHour.put(hour, congestionRate);
+            }
         }
+
         List<Map<String, Object>> result = new java.util.ArrayList<>();
-        countMap.forEach((h, cnt) -> {
+        congestionByHour.forEach((h, congestionRate) -> {
             Map<String, Object> entry = new java.util.HashMap<>();
             entry.put("h", String.format("%02d", h));
-            entry.put("total", cnt);
+            entry.put("total", congestionRate);
             result.add(entry);
         });
         return result;
