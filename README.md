@@ -61,7 +61,7 @@ V5__seed_hourly_congestion_demo.sql ← 시간대별 예상 혼잡도 차트용 
 - 적용 이력은 `bank.flyway_schema_history` 테이블에서 추적된다.
 - **주의**: 적용 완료된 마이그레이션 파일을 수정한 뒤에는 기존 DB의 Flyway 체크섬과 맞지 않을 수 있다. 이 경우 기존 제출용 더미 DB를 비우고 V1~V5를 처음부터 다시 적용해야 한다.
 
-> V1~V3/V5는 SQL 기반 Flyway 마이그레이션이고, V4는 Java 기반 Flyway 마이그레이션이다. V1~V3 SQL만 수동 실행하면 주민번호 보호 컬럼과 검색 인덱스가 완성되지 않으므로, 최종 DB 구성은 백엔드 기동을 통해 Flyway가 V5까지 적용하게 해야 한다. V5의 `DCG` prefix 이력은 관리자 혼잡도 UI 시연용 합성 완료 업무이며, AI 업무 예측 모델 학습에서는 제외된다.
+> V1\~V3/V5는 SQL 기반 Flyway 마이그레이션이고, V4는 Java 기반 Flyway 마이그레이션이다. V1\~V3 SQL만 수동 실행하면 주민번호 보호 컬럼과 검색 인덱스가 완성되지 않으므로, 최종 DB 구성은 백엔드 기동을 통해 Flyway가 V5까지 적용하게 해야 한다. V5의 `DCG` prefix 이력은 관리자 혼잡도 UI 시연용 합성 완료 업무이며, AI 업무 예측 모델 학습에서는 제외된다.
 
 ### 2. Backend (`bank-backend`)
 
