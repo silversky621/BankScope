@@ -1016,7 +1016,6 @@ const BankerWorkSpace = () => {
                                                     }}>AI 자동접수</span>
                                                 )}
                                                 <h2>{selectedTask.userName} <small>{selectedTask.ticketNumber}</small></h2>
-                                                <span className={styles.customerId}>접수번호: {selectedTask.taskId}</span>
                                             </div>
                                             <div className={styles.detailRisk}>
                                                 예상 대기 시간 <strong>{selectedTask.expectedWaitingTime}분</strong>

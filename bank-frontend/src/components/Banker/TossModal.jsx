@@ -102,7 +102,8 @@ const TossModal = ({ onClose, task }) => {
                 <div className={styles.content}>
                     <div className={styles.customerCard}>
                         <div className={styles.customerName}>
-                            <strong>{task?.userName || '고객명'}</strong> <small>접수번호: {task?.taskId || task?.id || '알수없음'}</small>
+                            <strong>{task?.userName || '고객명'}</strong>
+                            {task?.ticketNumber && <small>{task.ticketNumber}</small>}
                         </div>
                     </div>
 
